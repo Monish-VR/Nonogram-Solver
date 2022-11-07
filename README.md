@@ -1,2 +1,2 @@
 # Nongram Solver
-interactive notepad built on FPGA's
+parallelized nonogram solver on FPGA
