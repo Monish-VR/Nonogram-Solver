@@ -52,22 +52,26 @@ def test_tx(ser):
         print(e)
         ser.close()
 
-s = get_usb_port()  #grab a port
-print("USB Port: "+str(s)) #print it if you got
+def main():
+    s = get_usb_port()  #grab a port
+    print("USB Port: "+str(s)) #print it if you got
 
-if s:
-    ser = serial.Serial(port = s,
-        baudrate=9600,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        bytesize=serial.EIGHTBITS,
-        timeout=0.01) #auto-connects already I guess?
-    print("Serial Connected!")
-    if ser.isOpen():
-         print(ser.name + ' is open...')
-else:
-    print("No Serial Device :/ Check USB cable connections/device!")
-    exit()
+    if s:
+        ser = serial.Serial(port = s,
+            baudrate=9600,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            timeout=0.01) #auto-connects already I guess?
+        print("Serial Connected!")
+        if ser.isOpen():
+            print(ser.name + ' is open...')
+    else:
+        print("No Serial Device :/ Check USB cable connections/device!")
+        exit()
 
-#test_rx(ser)
-test_tx(ser)
+    #test_rx(ser)
+    test_tx(ser)
+
+if __name__ == "__main__":
+    main()
