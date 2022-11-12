@@ -35,8 +35,9 @@ module uart_rx #(parameter BAUD = 'd9600)(
     localparam START = 1;
     localparam RECEIVE = 2;
     localparam STOP = 3;
+    localparam DELAY = 4;
 
-    logic [1:0] state;
+    logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
     logic [2:0] data_index;
 
@@ -54,13 +55,13 @@ module uart_rx #(parameter BAUD = 'd9600)(
                         count <= 1;
                         data_index <= 0;
                     end
-                    axiov <= 0;
                 end
                 START: begin
-                    if (axiid != START_BIT) state <= IDLE;
+                    if (count == HALF_CYLE && axiid != START_BIT) state <= IDLE;
                     else if (count == CYCLES_PER_BIT)begin
                         state <= RECEIVE;
                         count <= 1;
+                        axiod <= 0;
                     end else count <= count + 1;
                 end
                 RECEIVE: begin
@@ -73,11 +74,19 @@ module uart_rx #(parameter BAUD = 'd9600)(
                     if (count == HALF_CYLE) axiod[data_index] <= axiid; // sample from middle
                 end
                 STOP: begin
-                    if (axiid != STOP_BIT) state <= IDLE;
+                    if (count == HALF_CYLE & axiid != STOP_BIT) state <= DELAY;
                     else if (count == CYCLES_PER_BIT)begin
                         axiov <= 1;
                         state <= IDLE;
+                        count <= 1;
                     end else count <= count + 1;
+                end
+                DELAY: begin
+                   if (count == HALF_CYLE)begin
+                        state <= IDLE;
+                        count <= 1;
+                    end else count <= count + 1;
+                    axiov <= 0;
                 end
             endcase
         end
