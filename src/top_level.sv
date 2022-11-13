@@ -44,6 +44,30 @@ module top_level (
         .axiov(receive_done),
         .axiod(received_data)
     );
+        ///Parser will write to the BRAM
+//parser need to output BRAM index 
+//for each new line X increases, 
+// at y==1 we put the line identifier
+// for y>1 we put an assigment for one cell- i.e INDEX OF CELL, VALUE
+
+
+    parser parse (.clk(clk_100mhz),
+        .rst(btnc),
+        .axiid(received_data),
+        .axiiv(receive_done)
+
+        .axiov(done_board), //board is done 
+        .axiovl(slot_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
+        .axiod(slot_data) //number of 
+
+    )
+
+    //BRAM INSTITIATION 
+
+
+    //solver Module
+
+
 
     /*always_ff @(posedge clk_100mhz)begin
         if (btnc) begin
