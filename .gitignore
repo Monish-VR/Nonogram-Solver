@@ -3,6 +3,8 @@ sim/
 .Xil/
 obj/
 docs/
+/__pycache__
 
 #ignore vivado's backups
 vivado*
+*.vcd
