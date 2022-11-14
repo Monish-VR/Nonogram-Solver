@@ -1,9 +1,7 @@
 from serial_com import get_usb_port
 import DNF_board
 import serial
-
-RECEIVE = 0
-TRANSMIT = 1
+import time
 
 def connect():
     s = get_usb_port()  #grab a port
@@ -25,6 +23,14 @@ def connect():
 
     return ser
 
+def bitstring_to_bytes(bit_str):
+    bit_int = int(bit_str, 2)
+    print(bit_int)
+    bit_byte = bit_int.to_bytes(2,'big')
+    print(bit_byte)
+    return bit_byte
+
+
 def rx(ser):
     timeToSend = False
     try:
@@ -39,26 +45,26 @@ def rx(ser):
     return
 
 def tx(ser, index):
+    c = DNF_board.make_serial([[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
+    print(type(c))
+    for i in range(0,len(c),16):
+        print(c[i:i+16])
+        bitstring_to_bytes(c[i:i+16])
+        i = i + 16
+        time.sleep(.75)
     return
 
 def main():
     print("hello")
-    connection = connect()
-
-    c = DNF_board.make_serial([[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
-    for i in range(0,len(c),16):
-        print(c[i:i+16])
-        i = i + 16
+    #connection = connect()
 
     index = 0
-
-    while True:
+    """ while True:
         rx(connection)
-        print("time to send")
-        tx(connection, index)
-        print("board #{} sent, waiting until needed".format(index))
-        index += 1
-
+        print("time to send") """
+    tx(0, index)
+    print("board #{} sent, waiting until needed".format(index))
+    index += 1
 
 if __name__ == "__main__":
     main() 
