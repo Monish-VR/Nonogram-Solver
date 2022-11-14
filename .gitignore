@@ -1,0 +1,8 @@
+#ignore irrelevant folders
+sim/
+.Xil/
+obj/
+docs/
+
+#ignore vivado's backups
+vivado*
