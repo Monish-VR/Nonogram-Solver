@@ -58,12 +58,27 @@ module top_level (
 
         .axiov(done_board), //board is done 
         .axiovl(slot_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
-        .axiod(slot_data) //number of 
+          .axiod(slot_data) //number of 
 
     )
 
     //BRAM INSTITIATION 
-
+  //  Xilinx Single Port Read First RAM
+  xilinx_single_port_ram_read_first #(
+    .RAM_WIDTH(18),                       // Specify RAM data width
+    .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+    .INIT_FILE(`FPATH(data.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
+  ) bram_options (
+  .addra(addra),     // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
+    .dina(slot_data),       // RAM input data, width determined from RAM_WIDTH
+    .clka(clk_100mhz),       // Clock
+    .wea(slot_done),         // Write enable
+    .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
+    .rsta(btnc),       // Output reset (does not affect memory contents)
+    .regcea(regcea),   // Output register enable
+    .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+  );
 
     //solver Module
 
