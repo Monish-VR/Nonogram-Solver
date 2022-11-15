@@ -3,7 +3,8 @@ parallelized nonogram solver on FPGA
 
 
 
-# BRAM Implementation-
+**BRAM Implementation**
+
 BRAM width will be size of 13.
 Each slot in the BRAM will have Cell Number, Boolean Value.
 We aim to have up to 2^12 nanogram cells (represented by 12 bits) and 1 bit for Bool.
