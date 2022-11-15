@@ -63,22 +63,24 @@ module top_level (
     )
 
     //BRAM INSTITIATION 
-  //  Xilinx Single Port Read First RAM
-  xilinx_single_port_ram_read_first #(
-    .RAM_WIDTH(18),                       // Specify RAM data width
-    .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
-    .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE(`FPATH(data.mem))          // Specify name/location of RAM initialization file if using one (leave blank if not)
-  ) bram_options (
-  .addra(addra),     // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
-    .dina(slot_data),       // RAM input data, width determined from RAM_WIDTH
-    .clka(clk_100mhz),       // Clock
-    .wea(slot_done),         // Write enable
-    .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
-    .rsta(btnc),       // Output reset (does not affect memory contents)
-    .regcea(regcea),   // Output register enable
-    .douta(douta)      // RAM output data, width determined from RAM_WIDTH
-  );
+    //  Xilinx Single Port Read First RAM
+    xilinx_single_port_ram_read_first #(
+        .RAM_WIDTH(13),                      //each slot in bram will be 13 bits- 12 bits for location 1 bit for boolean value
+                                            // UNLESS ITS LINE INDICATOR WHICH WILL BE up to 13 bits of indicating line  // Specify RAM data width
+         .RAM_DEPTH( 2**24 + 2**13 + 2**12 + 2),  //Full Calculation is on Dana's Ipad //M + M**2 + N + N**2 / / Specify RAM depth (number of entries) //Calculation is on my Ipad
+        .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+        .INIT_FILE(`FPATH())             //DO WE NEED THAT
+                                        // Specify name/location of RAM initialization file if using one (leave blank if not)
+    ) bram_options (
+    .addra(addra),     // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
+        .dina(slot_data),       // RAM input data, width determined from RAM_WIDTH
+        .clka(clk_100mhz),       // Clock
+        .wea(slot_done),         // Write enable
+        .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
+        .rsta(btnc),       // Output reset (does not affect memory contents)
+        .regcea(regcea),   // Output register enable
+        .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+    );
 
     //solver Module
 
