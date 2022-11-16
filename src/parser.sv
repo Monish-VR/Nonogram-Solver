@@ -13,9 +13,8 @@ module parser(
 
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
         // assuming 2x2 board
-        output logic [] bram_index, ///address to write the assignment to in BRAM
-        output logic [1:0] n, m;
-
+        output logic [25:0] bram_index, ///address to write the assignment to in BRAM
+        output logic [11:0] n, m;
         // size(cell index) is dependent on size of message we 2^12
     );
 
@@ -42,10 +41,11 @@ module parser(
     logic [2:0] flag;
 
     logic [12:0] line_index; //line index is MAX 2^12 + 1 
-    logic [12:0] bram_row;
-    logic [12:0] bram_col;
+    logic [12:0] bram_row, bram_col, num_bram_cols;
 
     assign flag = buffer[7:5];
+    assign num_bram_cols = max(n,m) + 1;
+    assign bram_index = bram_col + bram_row * num_bram_cols;
 
     always_ff @(posedge clk)begin
         if (rst)begin
@@ -77,7 +77,7 @@ module parser(
                         end
                         START_LINE: begin
                             write_ready <= 1;
-                            assigment <= 
+                            assigment <= line_index;
                         end
                         END_LINE: begin 
                             line_index <= line_index + 1;
@@ -104,7 +104,6 @@ module parser(
             end else write_ready <= 0;
         end
     end
-
 endmodule
 
 `default_nettype wire

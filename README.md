@@ -26,6 +26,12 @@ for m rows and n cols:
     n cols -> n * m lines
 each line has at most max(m,n) + 1 slots
 bringing the depth = 2mn * (max(m,n) + 1)
+- best case: m = n = sqrt(2^12) = 2^6 = 64
+    depth = 2(2^6)(2^6) * (2^6+1) = 2^13 * (2^6 + 1) = 2^19 + 2^13 = 532,480
+    requires 6,922,240 bits of space (fine)
+- worst case: m = 2^12 = 4096 and n = 2^0 = 1
+    depth = 2(2^12)(2^0) * (2^12 + 1) = 2^13 * (2^12 + 1) = 2^25 + 2^13 = 33,562,624
+    requires 436,314,112 bits of space (???? might be an issue)
 
 for a 2x4
 c c c c => 4 lines
