@@ -13,7 +13,7 @@ module parser(
 
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
         // assuming 2x2 board
-        output logic [] bram_index, ///
+        output logic [] bram_index, ///NOT SURE WHATS THAT *********
         output logic [1:0] n,m;
 
         // size(cell index) is dependent on size of message we 2^12
@@ -36,14 +36,14 @@ module parser(
     localparam END_LINE = 3'b001;
     localparam AND = 3'b101;
     localparam OR = 3'b010;
-    
-    logic count;
+        
+     logic count;
     logic [7:0] buffer;
     logic [2:0] flag;
 
-    /****hard coded******/
-    logic [1:0] line_index;
-    logic bram_row, bram_col;
+    logic [12:0] line_index; //line index is MAX 2^12 + 1 
+        logic [12:0] bram_row;
+        logic [12:0]bram_col;
 
     assign flag = buffer[7:5];
     assign assignment = {buffer[4:0], byte_in};
