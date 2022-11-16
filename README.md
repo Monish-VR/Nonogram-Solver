@@ -19,5 +19,11 @@ The maximum amount of lines we can have is in case we have 2^x cells is 2^x + 1 
 Therefore, BRAM depth should be 
 (2^12 + 1 ) * 2^12 = **2^24 + 2^13 + 2^12 + 2**
 
+Parser- 
+to keep line index < 2^12 
+
+Questions-
+Not sure why we need bram_row, braam_col, BRAM index in parser
+
 
 
