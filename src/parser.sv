@@ -13,8 +13,8 @@ module parser(
 
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
         // assuming 2x2 board
-        output logic [] bram_index, ///NOT SURE WHATS THAT *********
-        output logic [1:0] n,m;
+        output logic [] bram_index, ///address to write the assignment to in BRAM
+        output logic [1:0] n, m;
 
         // size(cell index) is dependent on size of message we 2^12
     );
@@ -37,16 +37,15 @@ module parser(
     localparam AND = 3'b101;
     localparam OR = 3'b010;
         
-     logic count;
+    logic count;
     logic [7:0] buffer;
     logic [2:0] flag;
 
     logic [12:0] line_index; //line index is MAX 2^12 + 1 
-        logic [12:0] bram_row;
-        logic [12:0]bram_col;
+    logic [12:0] bram_row;
+    logic [12:0] bram_col;
 
     assign flag = buffer[7:5];
-    assign assignment = {buffer[4:0], byte_in};
 
     always_ff @(posedge clk)begin
         if (rst)begin
@@ -68,6 +67,9 @@ module parser(
                             line_index <= 0;
                             bram_row <= 0;
                             bram_col <= 0;
+                            if (count) n <= {buffer[4:0], byte_in[7:1]};
+                            else m <= <= {buffer[4:0], byte_in[7:1]};
+                            count <= !count;
                         end
                         END_BOARD: begin
                             board_done <= 1;
@@ -75,23 +77,26 @@ module parser(
                         end
                         START_LINE: begin
                             write_ready <= 1;
-                            bram_col <= bram_col + 1;
+                            assigment <= 
                         end
                         END_LINE: begin 
                             line_index <= line_index + 1;
                             write_ready <= 0;
                             //changes bram_index (next row)
                             bram_row <= bram_row + 1;
+                            bram_col <= 0;
                         end
                         AND: begin
                             write_ready <= 1;
                             // change bram_index (next col)
                             bram_col <= bram_col + 1;
+                            assignment <= {buffer[4:0], byte_in};
                         end
                         OR: begin
                             write_ready <= 0;
                             // change bram_index (next row)
                             bram_row <= bram_row + 1;
+                            bram_col <= 0;
                         end
                     endcase
                 end
@@ -99,10 +104,6 @@ module parser(
             end else write_ready <= 0;
         end
     end
-
-    // t0 - rx 1 byte
-    // t1 - rx 1 byte
-    // t2 - rx 1 byte
 
 endmodule
 
