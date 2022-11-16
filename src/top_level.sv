@@ -21,8 +21,11 @@ module top_level (
 
     logic [COUNTER_WIDTH - 1: 0] counter;
     logic [7:0] byte_data, received_data, display_value;
-    logic receive_done, valid_in, transmit_done;
+    logic receive_done, valid_in, transmit_done, board_done, slot_done;
     logic [1:0] state;
+    logic [12:0] bram_input, bram_output;
+    logic [25:0] bram_index;
+    logic [11:0] n,m;
 
     assign led = display_value;
 
@@ -51,14 +54,18 @@ module top_level (
 // for y>1 we put an assigment for one cell- i.e INDEX OF CELL, VALUE
 
 
-    parser parse (.clk(clk_100mhz),
+    parser parse (
+        .clk(clk_100mhz),
         .rst(btnc),
-        .axiid(received_data),
-        .axiiv(receive_done)
+        .byte_in(received_data),
+        .valid_in(receive_done)
 
-        .axiov(done_board), //board is done 
-        .axiovl(slot_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
-        .axiod(slot_data) //number of 
+        .board_done(board_done), //board is done 
+        .write_ready(slot_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
+        .assignment(bram_output) //number of 
+        .write_index(bram_index), ///address to write the assignment to in BRAM
+        .n(n),
+        .m(m);
     )
 
     //BRAM INSTITIATION 
@@ -66,17 +73,17 @@ module top_level (
     xilinx_single_port_ram_read_first #(
         .RAM_WIDTH(13),     //each slot in bram will be 13 bits- 12 bits for location 1 bit for boolean value
                             // UNLESS ITS LINE INDICATOR WHICH WILL BE up to 13 bits of indicating line
-        .RAM_DEPTH( 2**24 + 2**13 + 2**12 + 2),  //Full Calculation is on Dana's Ipad //M + M**2 + N + N**2 / / Specify RAM depth (number of entries) //Calculation is on my Ipad
+        .RAM_DEPTH(33562624),  //Full Calculation is on Dana's Ipad //M + M**2 + N + N**2 / / Specify RAM depth (number of entries) //Calculation is on my Ipad
         .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
     ) bram_options (
-        .addra(addra),     // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
-        .dina(slot_data),  // RAM input data, width determined from RAM_WIDTH
-        .clka(clk_100mhz), // Clock
-        .wea(slot_done),   // Write enable
-        .ena(ena),         // RAM Enable, for additional power savings, disable port when not in use
-        .rsta(btnc),       // Output reset (does not affect memory contents)
-        .regcea(regcea),   // Output register enable
-        .douta(douta)      // RAM output data, width determined from RAM_WIDTH
+        .addra(bram_index), // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
+        .dina(bram_input),  // RAM input data, width determined from RAM_WIDTH
+        .clka(clk_100mhz),  // Clock
+        .wea(slot_done),    // Write enable
+        .ena(1),            // RAM Enable, for additional power savings, disable port when not in use
+        .rsta(btnc),        // Output reset (does not affect memory contents)
+        .regcea(1),         // Output register enable
+        .douta(bram_output) // RAM output data, width determined from RAM_WIDTH
     );
 
     //solver Module
