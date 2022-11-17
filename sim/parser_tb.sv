@@ -33,7 +33,6 @@ module parser_tb;
         #5;
         clk = !clk;
     end
-
     initial begin
         $dumpfile("parser.vcd");
         $dumpvars(0, parser_tb);
@@ -46,19 +45,41 @@ module parser_tb;
         #10;
         rst = 0;
 
-        logic [X :0] serial_bits;
-        serial_bits = //GET BITS FROM PYTHON CODE
+        logic [25 :0] serial_bits;
+        serial_bits = "1110_0000_0000_0_1100_0000_0000_0"//GET BITS FROM PYTHON CODE
 
         for (int i = 0; i<X; i = i + 8)begin
             valid_in = 1;
             rxd = serial_bits[i+7:i];
-            serial_bits = {pre[X-7:0], 8'b00} ;
+            serial_bits = {pre[25-7:0], 8'b00} ;
             #10;
         end
-        
+
         valid_in = 0;
         #1000;
-        
+
+                rst = 1;
+        #10;
+        rst = 0;
+
+
+        logic [61 :0] serial_bits;
+        serial_bits = "1110_0000_0000_0110_0000_0000_0001_0000_0000_0010_1000_0000_0110_1000_0000_11"//GET BITS FROM PYTHON CODE
+
+        for (int i = 0; i<X; i = i + 8)begin
+            valid_in = 1;
+            rxd = serial_bits[i+7:i];
+            serial_bits = {pre[61-7:0], 8'b00} ;
+            #10;
+        end
+
+        valid_in = 0;
+        #1000;
+
+                        rst = 1;
+        #10;
+
+        rst = 0;
 
         $display("Finishing Sim");
         $finish;
