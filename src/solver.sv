@@ -66,6 +66,8 @@ module solver(
                         false_assigment <=1;
                     end
                 if (~false_assigment) begin
+                        // we need to try another option with line ID2
+                    load_to_reg2 <=1;
                     
                 end
                 end
