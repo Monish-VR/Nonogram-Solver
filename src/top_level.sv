@@ -4,16 +4,15 @@
 module top_level (
         input wire clk_100mhz,
         input wire btnc,
-        input wire btnu,
         input wire rx,
 
         output logic tx,
         output logic [7:0] led
     );
     
-    localparam START = 0;
-    localparam TRANSMIT = 1;
-    localparam WAIT = 2;
+    localparam RECEIVE = 0;
+    localparam SOLVE = 1;
+    localparam TRANSMIT = 2;
 
     localparam CYCLES = 50_000_000;
     localparam MAX_BYTE = 255;
@@ -25,7 +24,7 @@ module top_level (
     logic [1:0] state;
     logic [12:0] bram_input, bram_output;
     logic [25:0] bram_index;
-    logic [11:0] n,m;
+    logic [11:0] n,m, solution;
 
     assign led = display_value;
 
@@ -58,15 +57,15 @@ module top_level (
         .clk(clk_100mhz),
         .rst(btnc),
         .byte_in(received_data),
-        .valid_in(receive_done)
+        .valid_in(receive_done),
 
         .board_done(board_done), //board is done 
         .write_ready(slot_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
-        .assignment(bram_output) //number of 
-        .write_index(bram_index), ///address to write the assignment to in BRAM
+        .assignment(bram_output), //number of 
+        .bram_index(bram_index), ///address to write the assignment to in BRAM
         .n(n),
-        .m(m);
-    )
+        .m(m)
+    );
 
     //BRAM INSTITIATION 
     //  Xilinx Single Port Read First RAM
@@ -74,8 +73,8 @@ module top_level (
         .RAM_WIDTH(13),     //each slot in bram will be 13 bits- 12 bits for location 1 bit for boolean value
                             // UNLESS ITS LINE INDICATOR WHICH WILL BE up to 13 bits of indicating line
         .RAM_DEPTH(33562624),  //Full Calculation is on Dana's Ipad //M + M**2 + N + N**2 / / Specify RAM depth (number of entries) //Calculation is on my Ipad
-        .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    ) bram_options (
+        .RAM_PERFORMANCE("HIGH_PERFORMANCE") // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+    ) possible_options (
         .addra(bram_index), // Address bus, width determined from RAM_DEPTH //NOT SURE WHAT TO PUT HERE
         .dina(bram_input),  // RAM input data, width determined from RAM_WIDTH
         .clka(clk_100mhz),  // Clock
@@ -89,42 +88,22 @@ module top_level (
     //solver Module
 
 
-
-    /*always_ff @(posedge clk_100mhz)begin
-        if (btnc) begin
-            byte_data <= 0;
-            display_value <= 0;
-            counter <= 0;
-            state <= START;
-        end else begin
-            if (receive_done) display_value <= received_data;
-        end
-    end*/
-
     always_ff @(posedge clk_100mhz)begin
         if (btnc) begin
             byte_data <= 0;
             display_value <= 0;
             counter <= 0;
-            state <= START;
+            state <= RECEIVE;
         end else begin
             case (state)
-                START: begin
-                    state <= TRANSMIT;
-                    valid_in <= 1;
+                RECEIVE: begin
+                    if (board_done) state <= SOLVE;
+                end
+                SOLVE: begin
+                    //find solution. 
                 end
                 TRANSMIT: begin
-                    if (transmit_done) state <= WAIT;
-                    valid_in <= 0;
-                end
-                WAIT: begin
-                    if (counter == CYCLES) begin
-                        counter <= 0;
-                        state <= START;
-                        byte_data <= byte_data + 1;
-                        display_value <= display_value + 1;
-                    end
-                    else counter <= counter + 1;
+                    // transmit solution back to PC
                 end
             endcase
         end

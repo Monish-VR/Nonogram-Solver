@@ -5,7 +5,7 @@ module parser(
         input wire clk,
         input wire rst,
         input wire [7:0] byte_in,
-        input wire valid_in;
+        input wire valid_in,
         
         output logic board_done,  //signals parser is done
         output logic write_ready, //signals when output to be written to BRAM is done
@@ -14,7 +14,7 @@ module parser(
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
         // assuming 2x2 board
         output logic [25:0] bram_index, ///address to write the assignment to in BRAM
-        output logic [11:0] n, m;
+        output logic [11:0] n, m
         // size(cell index) is dependent on size of message we 2^12
     );
 
@@ -44,7 +44,7 @@ module parser(
     logic [12:0] bram_row, bram_col, num_bram_cols;
 
     assign flag = buffer[7:5];
-    assign num_bram_cols = max(n,m) + 1;
+    assign num_bram_cols = $max(n,m) + 1;
     assign bram_index = bram_col + bram_row * num_bram_cols;
 
     always_ff @(posedge clk)begin
@@ -52,9 +52,10 @@ module parser(
             board_done <= 0;
             write_ready <= 0;
             count <= 0;
-            first_line <= 0;
             bram_row <= 0;
             bram_col <= 0;
+            n <= 0;
+            m <= 0;
         end else begin
             if (valid_in)begin
                 if (!count) buffer <= byte_in;
@@ -63,21 +64,20 @@ module parser(
                         START_BOARD:begin
                             // handle n,m
                             write_ready <= 0;
-                            first_line <= 1;
                             line_index <= 0;
                             bram_row <= 0;
                             bram_col <= 0;
                             if (count) n <= {buffer[4:0], byte_in[7:1]};
-                            else m <= <= {buffer[4:0], byte_in[7:1]};
+                            else m <= {buffer[4:0], byte_in[7:1]};
                             count <= !count;
                         end
                         END_BOARD: begin
                             board_done <= 1;
-                            write_ready <= 1; //send over n and m
+                            write_ready <= 0; //send over n and m
                         end
                         START_LINE: begin
                             write_ready <= 1;
-                            assigment <= line_index;
+                            assignment <= line_index;
                         end
                         END_LINE: begin 
                             line_index <= line_index + 1;
@@ -102,6 +102,7 @@ module parser(
                 end
                 count <= !count;
             end else write_ready <= 0;
+            if (board_done) board_done <= 0;
         end
     end
 endmodule
