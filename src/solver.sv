@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+/* `timescale 1ns / 1ps
 `default_nettype none
 
 module solver(
@@ -82,3 +82,4 @@ module solver(
 endmodule
 
 `default_nettype wire
+ */

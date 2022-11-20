@@ -1,10 +1,14 @@
-#ignore irrelevant folders
-sim/
-.Xil/
-obj/
-docs/
+#ignore irrelevant folders in root
+/sim/
+/.Xil/
+/obj/
+/docs/
 /__pycache__
 
 #ignore vivado's backups
 vivado*
 *.vcd
+
+#ignore all but .xci in IP folders
+/IP/*/*
+!/IP/*/*.xci
