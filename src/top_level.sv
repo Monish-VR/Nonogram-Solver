@@ -23,11 +23,10 @@ module top_level (
     logic [7:0] byte_data, received_data, display_value;
     logic receive_done, valid_in, transmit_done, board_done, line_done, next_line;
     logic [1:0] state;
-    logic [12:0] bram_input, bram_output;
-    logic [123:0] fifo_in, fifo_out;
-    logic [25:0] bram_index;
-    logic [11:0] n,m, solution;
+    logic [1023:0] fifo_in, fifo_out;
     logic fifo_empty, fifo_full;
+    logic [3:0] n,m; // HARDCODED for 11x11
+    logic [4:0] [6:0] options_per_line; // HARDCODED for 11x11
 
     assign rst = btnc;
     assign led = display_value;
@@ -65,8 +64,8 @@ module top_level (
 
         .board_done(board_done), //board is done 
         .write_ready(line_done), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
-        .assignment(bram_output), //number of 
-        .bram_index(bram_index), ///address to write the assignment to in BRAM
+        .line(fifo_in),
+        .options_per_line(options_per_line),
         .n(n),
         .m(m)
     );

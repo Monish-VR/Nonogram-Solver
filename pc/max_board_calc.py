@@ -44,8 +44,9 @@ def max_options(m):
             break
     return (options, n+1, r-1)
 
-m = 20
+m = 11
 
 options,n,r = max_options(m)
 print((n,r))
+print(options)
 print(mem_cost(m,n,r))
