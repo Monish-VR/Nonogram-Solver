@@ -1,5 +1,4 @@
 #ignore irrelevant folders in root
-/sim/
 /.Xil/
 /obj/
 /docs/

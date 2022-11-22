@@ -2,17 +2,140 @@
 `timescale 1ns / 1ps
 `default_nettype none
 //assuming line index starts at 0
+
+module fifo_solver (
+        input wire clk,
+        input wire rst,
+        input wire [size-1:0] option,
+        input wire [size-1:0] line_ind,
+        input wire valid_op,
+        input wire row, //is it a row or a column (line indices repeat, once for the row index and once for the column)
+        input wire [size:0] option_num,//TODO: what size is this
+
+        output logic [size-1:0] assigned_board [size-1:0], 
+        output logic put_back_to_FIFO, 
+        output logic new_option_num
+    );
+        parameter size = 4;
+        logic [size-1:0] [size-1:0] known;
+        logic [size-1:0] [size-1:0] assigned ;
+        logic contradict;
+        logic simp_valid;
+
+        logic [size-1:0] assi_simp;
+        logic [size-1:0] known_simp;
+
+        simplify #(.size(size))simplify_m(
+        .clk(clk),
+        .rst(rst),
+        .valid_in(valid_op),
+        .assigned(assi_simp), //[size-1:0]
+        .known(known_simp),
+        .option(option),
+        .valid(simp_valid),
+        .contradict(contradict)
+        );
+
+
+    logic [size-1:0] [size-1:0] known_t;
+    logic [size-1:0] [size-1:0] assigned_t;
+
+    genvar m;
+    genvar n;
+    for(m = 0; m < size; m = m + 1) begin
+        for(n = 0; n < size; n = n + 1) begin
+
+            assign known_t[n][m] = known[m][n];
+            assign assigned_t[n][m] = assigned[m][n];
+        end
+    end
+
+    //always_ff @(posedge clk) begin
+    //    for (int i..)
+    //        for (int j...)
+    //end
+
+    always_comb begin
+        if (row) begin
+            assi_simp = assigned[line_ind];
+            known_simp = known[line_ind];
+        end else begin
+            assi_simp = assigned_t[line_ind];
+            known_simp = known_t[line_ind];
+            //for (int i = 0; i < size; i = i + 1)begin
+            //    assi_simp[i] = assigned[i][line_ind];
+            //    known_simp[i] = known[i][line_ind];
+            //end
+        end
+
+    end
+    
+    always_ff @(posedge clk)begin
+        if(rst)begin
+            known <= 0;
+            assigned <= 0;
+        end 
+        
+        else if (option_num == 1) begin
+            //this is the only valid option for the line
+            if (row) begin
+                known[line_ind] <= -1; //-1;//this might be wroing '{1}
+                assigned[line_ind] <= option;
+            end else begin
+                //known_t[line_ind] <= 0; //-1;//this might be wroing '{1}
+               // assigned_t[line_ind] <= option;
+                integer j = 0;
+                for(integer i = line_ind; i < size*size; i = i + size)begin
+                    known[i] <= 1;
+                    assigned[i] <= option[j];
+                    j = j + 1;
+                end
+            end
+        end
+        
+        else if (valid_op) begin       
+            if (row) begin
+                known[line_ind] = -1;//-1;//this might be wroing '{1}
+                assigned[line_ind] <= option;
+            end else begin
+                //known_t[line_ind] = {1};//-1;//this might be wroing '{1}
+                //assigned_t[line_ind] <= option;
+                integer j = 0;
+                for(integer i = line_ind; i < size*size; i = i + size)begin
+                    known[i] <= 1;
+                    assigned[i] <= option[j];
+                    j = j + 1;
+                end
+            end
+
+            if (contradict && simp_valid)begin
+                put_back_to_FIFO <= 0;
+                new_option_num <= option_num - 1;
+            end else begin
+                put_back_to_FIFO <= 1;
+            end
+        end
+    end
+
+endmodule
+
+
+
+
+/*
 module fifo_solver(#(parameter size =11)(
         input wire clk,
         input wire rst,
         input wire [1023:0] read_FIFO,
-        input wire fifo_empty,
+        input wire [6:0] options_per_line,
 
         output logic write_to_fifo, //when we simplified a line and want to put it back
         output logic rd_from_fifo, // when we want to read a nw line
         output logic [1023:0] dout, //simplified line out, write to fifo
         output logic [size-1:0] assigned_board [size-1:0], //when we're done we send the board
         output logic solved  //signals solver is done sends assigned board
+        output logic option_counter
+
     );
 
 
@@ -150,7 +273,7 @@ end
 
 endmodule
 
-
+*/
 
 `default_nettype wire
 

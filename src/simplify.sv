@@ -20,22 +20,16 @@ valid returns if the run was valid
 
 */
 
-always_ff @(posedge clk)begin
-    if (rst) begin
-        valid <= 0;
-    end else if (valid_in) begin
-        $display("assigned: %b", assigned);
-        $display("option: %b", option);
-        $display("known: %b", known);
-        $display("(assigned ^ option) & known is %b",(assigned ^ option) & known);
+always_comb begin
+    if (valid_in) begin
         if (((assigned ^ option) & known) > 0) begin
-            contradict <= 1;
+            contradict = 1;
         end else begin
-            contradict <= 0;
+            contradict = 0;
         end 
-        valid <= 1;
+        valid = 1;
     end else begin
-        valid <= 0; 
+        valid = 0; 
     end
 end
 
