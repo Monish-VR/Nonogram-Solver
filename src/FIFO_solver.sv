@@ -118,7 +118,7 @@ endmodule
 
 
 /*
-module fifo_solver(#(parameter SIZE =11)(
+module fifo_solver(#(parameter size =11)(
         input wire clk,
         input wire rst,
         input wire [1023:0] read_FIFO,
