@@ -49,12 +49,7 @@ module fifo_solver (
             assign assigned_t[n][m] = assigned[m][n];
         end
     end
-
-    //always_ff @(posedge clk) begin
-    //    for (int i..)
-    //        for (int j...)
-    //end
-
+    
     always_comb begin
         if (row) begin
             assi_simp = assigned[line_ind];
@@ -78,6 +73,7 @@ module fifo_solver (
         
         else if (option_num == 1) begin
             //this is the only valid option for the line
+            put_back_to_FIFO <= 0;
             if (row) begin
                 known[line_ind] <= -1; //-1;//this might be wroing '{1}
                 assigned[line_ind] <= option;
@@ -90,19 +86,7 @@ module fifo_solver (
                end
             end
         
-        end  else if (valid_op) begin       
-            if (row) begin
-                known[line_ind] = -1;//-1;//this might be wroing '{1}
-                assigned[line_ind] <= option;
-            end else begin
-                //known_t[line_ind] = {1};//-1;//this might be wroing '{1}
-                //assigned_t[line_ind] <= option;
-                for(integer row = 0; row < SIZE; row = row + 1) begin
-                    known[row*SIZE + line_ind] <= 1;
-                    assigned[row*SIZE + line_ind] <= option[row];
-               end
-            end
-
+        end else if (valid_op) begin       
             if (contradict && simp_valid)begin
                 put_back_to_FIFO <= 0;
                 new_option_num <= option_num - 1;
