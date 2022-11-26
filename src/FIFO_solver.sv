@@ -12,13 +12,13 @@ module fifo_solver (
         input wire row, //is it a row or a column (line indices repeat, once for the row index and once for the column)
         input wire  [SIZE:0] option_num,//TODO: what SIZE is this
 
-        output logic  [SIZE-1:0] assigned_board  [SIZE-1:0], 
+        output logic  [SIZE-1:0]  [SIZE-1:0] assigned, 
         output logic put_back_to_FIFO, 
         output logic new_option_num
     );
         parameter SIZE = 4;
-        logic  [SIZE-1:0]  [SIZE-1:0] known;
-        logic  [SIZE-1:0]  [SIZE-1:0] assigned ;
+        logic  [SIZE-1:0] [SIZE-1:0] known;
+        
         logic contradict;
         logic simp_valid;
 
@@ -49,7 +49,7 @@ module fifo_solver (
             assign assigned_t[n][m] = assigned[m][n];
         end
     end
-    
+
     always_comb begin
         if (row) begin
             assi_simp = assigned[line_ind];
