@@ -70,6 +70,8 @@ module FIFO_tb;
         valid_op =1;
         row =1;
 
+
+
         #10;
         #10;
         option = 3'b001;
@@ -78,20 +80,15 @@ module FIFO_tb;
         valid_op =1;
         row =1;
 
-
-        #5;
-        rst = 1;
         #10;
-        rst = 0;
         #10;
-        SIZE = 3;
-
         //should cotradict :
         option = 3'b100;
         option_num =3;
         line_ind = 3; //first column
         valid_op =1;
         row =0;
+
 $display("assigned %d", assigned);
 //shoudnt contradict
         #10;

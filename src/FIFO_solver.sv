@@ -3,6 +3,9 @@
 `default_nettype none
 //assuming line index starts at 0
 
+//packed arrays give the values the opposite way from what we expect, so array of 3X3, 
+//when we call array[0] it will give the last 3 bits
+
 module fifo_solver (
         input wire clk,
         input wire rst,
@@ -56,12 +59,12 @@ module fifo_solver (
 //Grab the line from relevant known and assigned blocks
     always_comb begin
         if (row) begin
-            assi_simp = assigned[line_ind];
-            known_simp = known[line_ind];
-            
+            assi_simp = assigned[SIZE - line_ind ];
+            known_simp = known[SIZE - line_ind ];
+
         end else begin
-            assi_simp = assigned_t[line_ind];
-            known_simp = known_t[line_ind];
+            assi_simp = assigned_t[SIZE - line_ind ];
+            known_simp = known_t[SIZE - line_ind ];
             //for (int i = 0; i < SIZE; i = i + 1)begin
             //    assi_simp[i] = assigned[i][line_ind];
             //    known_simp[i] = known[i][line_ind];
