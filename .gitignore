@@ -3,10 +3,12 @@
 /obj/
 /docs/
 /__pycache__
+/.idea
 
 #ignore vivado's backups
 vivado*
 *.vcd
+*.out
 
 #ignore all but .xci in IP folders
 /IP/*/*

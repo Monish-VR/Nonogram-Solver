@@ -28,7 +28,8 @@ read_xdc ./xdc/top_level.xdc
 set_part $partNum
 
 read_ip ./IP/fifo_11_by_11/fifo_11_by_11.xci
-synth_ip [get_ips fifo_11_by_11] -force
+generate_target all [get_ips]
+synth_ip [get_ips]
 
 # synth
 synth_design -top top_level -part $partNum -verbose
