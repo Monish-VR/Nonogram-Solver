@@ -23,7 +23,7 @@ module top_level (
     logic [7:0] byte_data, received_data, display_value;
     logic receive_done, valid_in, transmit_done, board_done, line_done, next_line;
     logic [1:0] state;
-    logic [1023:0] fifo_in, fifo_out;
+    logic [15:0] fifo_in, fifo_out;
     logic fifo_empty, fifo_full;
     logic [3:0] n,m; // HARDCODED for 11x11
     logic [4:0] [6:0] options_per_line; // HARDCODED for 11x11
@@ -89,16 +89,16 @@ module top_level (
     ); */
 
     fifo_11_by_11 fifo (
-        .clk(clk_100mhz),                  // input wire clk
+        .clk(clk_100mhz),               // input wire clk
         .rst(rst),                      // input wire rst
-        .din(fifo_in),                  // input wire [1023 : 0] din
+        .din(fifo_in),                  // input wire [15 : 0] din
         .wr_en(line_done),              // input wire wr_en
         .rd_en(next_line),              // input wire rd_en
-        .dout(fifo_out),                // output wire [1023 : 0] dout
-        .full(fifo_full),                    // output wire full
-        .empty(fifo_empty),              // output wire empty
-        .wr_rst_busy(),  // output wire wr_rst_busy DON'T NEED?
-        .rd_rst_busy()  // output wire rd_rst_busy DON'T NEED?
+        .dout(fifo_out),                // output wire [15 : 0] dout
+        .full(fifo_full),               // output wire full
+        .empty(fifo_empty),             // output wire empty
+        .wr_rst_busy(),                 // output wire wr_rst_busy DON'T NEED?
+        .rd_rst_busy()                  // output wire rd_rst_busy DON'T NEED?
     );
 
     //solver Module

@@ -103,15 +103,15 @@ def tx(ser, index):
 
 def main():
     print("hello")
-    #connection = connect()
+    connection = connect()
 
     index = 0
-    """ while True:
+    while True:
+        tx(connection, index)
+        print("board #{} sent, waiting until needed".format(index))
         rx(connection)
-        print("time to send") """
-    tx(0, index)
-    print("board #{} sent, waiting until needed".format(index))
-    index += 1
+        print("time to send")
+        index += 1
 
 """ def test_rx(input):
     board_done = False
