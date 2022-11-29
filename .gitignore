@@ -2,8 +2,8 @@
 /.Xil/
 /obj/
 /docs/
-/__pycache__
-/.idea
+*/__pycache__/
+*/.idea/
 
 #ignore vivado's backups
 vivado*

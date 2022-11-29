@@ -25,16 +25,17 @@ def convert_to_binary_string(number):
 
 #print(convert_to_binary_string(3))
 
-def make_serial(solutions):
+def make_serial(m,n,solutions):
     
     generic_end = '0'*13
-    start_board = msg_keys['start_board'] +generic_end
+    start_board = msg_keys['start_board']
     end_board = msg_keys['end_board'] + generic_end
     new_line = msg_keys['start_line'] + generic_end
     end_line = msg_keys['end_line'] + generic_end
     new_or = msg_keys['or'] + generic_end
     
-    ans = start_board
+    ans = start_board + convert_to_binary_string(m) + '0'
+    ans += start_board + convert_to_binary_string(n) + '0'
     
     for line in solutions:
         ans += new_line
@@ -146,7 +147,7 @@ c = [[1],[2]]
         
 
 def main():
-    c = make_serial([[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
+    c = make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     i=0
     while i < len(c):
         print(c[i:i+16])
