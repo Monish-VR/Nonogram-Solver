@@ -113,7 +113,7 @@ def main():
         print("time to send")
         index += 1
 
-""" def test_rx(input):
+def test_rx(input):
     board_done = False
     board = []
     m = 0
@@ -133,11 +133,11 @@ def main():
                 buffer = byte_to_bitstring(data)
             else:
                 msg = buffer + byte_to_bitstring(data)
-                print(msg)
-                print(type(msg))
-                print(len(msg))
-                print(msg[:3])
-                print("end")
+                # print(msg)
+                # print(type(msg))
+                # print(len(msg))
+                # print(msg[:3])
+                # print("end")
                 flag = msg[:3]
                 if flag == msg_flags['start']:
                     if m == 0:
@@ -153,14 +153,15 @@ def main():
                     x = indx % n
                     y = indx // n
                     board[y][x] = msg[15]
-            count = not count"""
+            count = not count
 
 if __name__ == "__main__":
-    main() 
+    #main() 
     
     """ byt = bitstring_to_bytes("1000000000101100")
     print(type(byt))
     string = bytes_to_bitstring(byt) """
-
-    """ c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
-    test_rx(c) """
+    r = [[2],[1]]
+    c = [[1],[2]]
+    d = DNF_board.make_DNF(r,c)
+    test_rx(d)

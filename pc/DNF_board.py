@@ -26,7 +26,6 @@ def convert_to_binary_string(number):
 #print(convert_to_binary_string(3))
 
 def make_serial(m,n,solutions):
-    
     generic_end = '0'*13
     start_board = msg_keys['start_board']
     end_board = msg_keys['end_board'] + generic_end
@@ -39,8 +38,12 @@ def make_serial(m,n,solutions):
     
     for line in solutions:
         ans += new_line
+        first_or = True
         for ors in line:
-            ans += new_or
+            if first_or:
+                first_or = False
+            else:
+                ans += new_or
             for num,val in ors:
                 ans += msg_keys['and'] + convert_to_binary_string(num) + str(val)
         ans += end_line
@@ -48,8 +51,6 @@ def make_serial(m,n,solutions):
     ans += end_board
     return ans
     
-    #ser.write(ans.decode('bin'))
-
 def get_sols(spots, conds):
     all_solutions = []
 
@@ -84,26 +85,6 @@ def get_sols(spots, conds):
             all_solutions.append([0] + sol)
     return all_solutions
 
-def make_DNF(rows, cols):
-    """
-    use get sols to get all solution for each row and each column,
-    will return the AND of each of the solutions
-    in the format of:
-    for a line we will have a list:
-        [ [OPTION 1] , [OPTION 2] ...] 
-        where option is constructed of tuples : (location, boolean)
-        location is 0...mXn
-    """
-    DNF_rows = generate(rows, cols, False)
-    DNF_cols = generate(cols, rows, True)
-    formula = make_serial(DNF_rows + DNF_cols)
-    i=0
-    while i < len(formula):
-        print(formula[i:i+16])
-        i = i + 16
-    return DNF_rows + DNF_cols
-
-        
 def format_converter(option, line_number, num_ortho_lines,cols=False):
     """
     option = [1,0,0]
@@ -119,8 +100,6 @@ def format_converter(option, line_number, num_ortho_lines,cols=False):
         else:
             valid_line.append(((line_number*num_ortho_lines)+i , elm))
     return valid_line
-
-
 
 
 def generate(lines, lines_ortho, cols_bool=False):
@@ -139,18 +118,52 @@ def generate(lines, lines_ortho, cols_bool=False):
         DNF_formula.append(line_or)
     
     return DNF_formula
+
+def reduce(formula, isRow, n):
+    new_form = []
+    for line in formula:
+        new_line = []
+        for ors in line:
+            new_or = []
+            for num,val in ors:
+                new_num = num % n if isRow else num // n
+                new_or.append((new_num,val))
+            new_line.append(new_or)
+        new_form.append(new_line)
+    return new_form
     
+def make_DNF(rows, cols):
+    """
+    use get sols to get all solution for each row and each column,
+    will return the AND of each of the solutions
+    in the format of:
+    for a line we will have a list:
+        [ [OPTION 1] , [OPTION 2] ...] 
+        where option is constructed of tuples : (location, boolean)
+        location is 0...mXn
+    """
+    DNF_rows = reduce(generate(rows, cols, False),True,len(cols))
+    print(DNF_rows)
+    DNF_cols = reduce(generate(cols, rows, True),False,len(cols))
+    print(DNF_cols)
+    formula = make_serial(len(rows), len(cols),DNF_rows + DNF_cols)
+    i=0
+    while i < len(formula):
+        print(formula[i:i+16])
+        i = i + 16
+    return formula
 
-b = [[2],[1]]
+r = [[2],[1]]
 c = [[1],[2]]
-
         
-
 def main():
-    c = make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
+    make_DNF(r,c)
+    """ c = make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     i=0
     while i < len(c):
         print(c[i:i+16])
-        i = i + 16  
+        i = i + 16   """
 
+if __name__ == "__main__":
+    main() 
 # make_serial([[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]]], [[[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]]])
