@@ -16,19 +16,21 @@ module fifo_solver (
 
         output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
-        output logic new_option_num, // for the BRAM gonna either be same as option num or 1 less
+        // output logic new_option_num, // for the BRAM gonna either be same as option num or 1 less
         output logic valid_out
     );
 
-        logic [SIZE-1] line_ind; //TODO:What size should this be?
+        logic [$clog2(SIZE)] line_ind; //TODO:What size should this be?
         assign row = line_ind < SIZE;
         parameter SIZE = 3;
         logic  [SIZE-1:0] [SIZE-1:0] known;
         
-        logic checking_option;
+        logic valid_in_simplify;
 
         logic [6:0] options_left; //options left to get from the fifo
         logic [6:0] net_valid_opts; //how many valid options we checked
+
+        logic [SIZE-1:0] last_valid_option; //that is the last valid option we got for this line. we need it for when we transition we want to use it to assign
 
         logic contradict; //if 1 contradicts and we remove it
         logic simp_valid; //out put valid for simplify
@@ -39,10 +41,12 @@ module fifo_solver (
         logic [SIZE-1:0] always1;// a and b
         logic [SIZE-1:0] always0;
 
+        logic started;
+
         simplify #( (SIZE))simplify_m(
         .clk(clk),
         .rst(rst),
-        .valid_in(checking_option),
+        .valid_in(valid_in_simplify),
         .assigned(assi_simp), // SIZE-1:0]
         .known(known_simp),
         .option(option),
@@ -69,7 +73,7 @@ module fifo_solver (
 //Grab the line from relevant known and assigned blocks
     always_comb begin
         if (options_left > 0) begin
-            checking_option = 1;
+            valid_in_simplify = 1;
             if (row) begin
                 assi_simp = assigned[SIZE - line_ind ];
                 known_simp = known[SIZE - line_ind ];
@@ -81,7 +85,7 @@ module fifo_solver (
         end
         else begin 
             //this is the case where the input to the queue is a line index
-            checking_option = 0;
+            valid_in_simplify = 0;
         end
     end
     
@@ -90,31 +94,59 @@ module fifo_solver (
             known <= 0;
             assigned <= 0;
             valid_out <=0;
-        end else begin (options_left > 0)begin
+            net_valid_opts <=0;
+            last_valid_option<=0;
+            started <=0;
+
+        //first first round:
+        end else if (started == 0 && valid_op) begin
+            started <= 1;
+            line_ind <= option;
+            options_left <= options_amnt[0];
+            net_valid_opts <= 0;
+            always1 <= ~0;
+            always0 <= ~0 ;
+
+        //if we have options left to check:
+        end else if (options_left > 0)begin
             if (simp_valid) begin       
                 if (contradict)begin
                     put_back_to_FIFO <= 0;
-                    new_option_num <= option_num - 1;
-
+                    // net_valid_opts <= net_valid_opts - 1;
                 end else begin
+                    last_valid_option <= option;
                     put_back_to_FIFO <= 1;
+                    net_valid_opts <= net_valid_opts + 1;
+                    always1 <= always1 && option;
+                    always0 <= always0 && ~option;
                 end
                 valid_out<=1;
+                options_left <= options_left - 1 ;
             end
-        end else begin
-            //transition to new line 
-            options_left <= options_amnt[line_ind];
+
+        //transition to new line, reset some registers
+        end else if (options_left == 0) begin
+            line_ind <= option;
+            options_left <= options_amnt[option];
             net_valid_opts <= 0;
-            if (options_amnt[line_ind] == 1) begin
+            always1 <= ~0;
+            always0 <= ~0 ;
+            //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
+            if  () begin
+                
+            end
+
+
+            if (net_valid_opts == 1) begin
                 //only one valid option
                 put_back_to_FIFO <= 0;
                 if (row) begin
                     known[line_ind] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                    assigned[line_ind] <= option;
+                    assigned[line_ind] <= last_valid_option;
                 end else begin
                     for(integer row = 0; row < SIZE; row = row + 1) begin
-                            known[row*SIZE + line_ind] <= 1;
-                            assigned[row*SIZE + line_ind] <= option[row];
+                        known[row*SIZE + line_ind] <= 1;
+                        assigned[row*SIZE + line_ind] <= last_valid_option[row];
                     end
                 end
             end
