@@ -101,6 +101,9 @@ module fifo_solver (
             last_valid_option<=0;
             started <=0;
             one_option_case <= 0;
+
+        //@Nina - I dont think we need simp valid here since the valid from simp was relevant in the previous cycle
+        //I dont think it's correct cuz when we get to here we already put the line back to fifo..
         end else if (one_option_case && simp_valid) begin
             put_back_to_FIFO <= 0;
             if (row) begin
@@ -136,14 +139,20 @@ module fifo_solver (
             //unsure if thats nessessary
             
             //@DANA - what do you think of combining the starter code logic with this code?
+            //@Nina - I think it's ok, the thing is that it will only understand that it has one option after a whole iteration over the FIFO
+            // thats what I tried to avoid with the code from before, (under transition check if #option==1) 
+            //which i agree may have been wrong as it does put it into fifo tho.., but I tried to immidiate 
+            //identify when we have only one option when we transition.  
+
             if (started == 1) begin
                 options_amnt[line_ind] <= net_valid_opts;
                 options_left <= options_amnt[option];
-                if (options_amnt[option] == 1)begin
+                if (options_amnt[option] == 1) begin
                     one_option_case <= 1;
                 end else begin
                     one_option_case <= 0;
                 end
+
             end else begin
                 //first line logic
                 started <= 1;
@@ -158,6 +167,7 @@ module fifo_solver (
             net_valid_opts <= 0;
             always1 <= -1;
             always0 <= -1;
+
             //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
             if  (row) begin
                 //right now my only idea is to have a for loop and go through the options and check 
