@@ -102,8 +102,6 @@ module fifo_solver (
             started <=0;
             one_option_case <= 0;
 
-        //@Nina - I dont think we need simp valid here since the valid from simp was relevant in the previous cycle
-        //I dont think it's correct cuz when we get to here we already put the line back to fifo..
         end else if (one_option_case && simp_valid) begin
             put_back_to_FIFO <= 0;
             if (row) begin
@@ -147,6 +145,7 @@ module fifo_solver (
             if (started == 1) begin
                 options_amnt[line_ind] <= net_valid_opts;
                 options_left <= options_amnt[option];
+                //@Nina I think here we done with a line, since we dont have options to check
                 if (options_amnt[option] == 1) begin
                     one_option_case <= 1;
                 end else begin
@@ -170,9 +169,33 @@ module fifo_solver (
 
             //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
             if  (row) begin
+                for(integer i = 0; i < SIZE; i = i + 1) begin
+                    if (always1[i] == 1) begin 
+                        known[line_ind][i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[line_ind][i] <= 1;
+                    end
+                    if (always0[i] == 1) begin 
+                        known[line_ind][i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[line_ind][i] <= 0;
+                    end
+                end
+            end else if (~row) begin
+                
+                for(integer i = 0; i < SIZE; i = i + 1) begin
+                    // I think the row we indexing into is i
+                    //and the column is line index-size
+                    if (always1[i] == 1) begin 
+                        known[i][line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i][line_ind - SIZE] <= 1;
+                    end
+                    if (always0[i] == 1) begin 
+                        known[i][line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i][line_ind - SIZE] <= 0;
+                    end
+                end
+            end
                 //right now my only idea is to have a for loop and go through the options and check 
                 //but that feels jank so maybe lets ask in office hours first?
-            end else begin
 
             end
             
