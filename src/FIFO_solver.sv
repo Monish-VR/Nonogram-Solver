@@ -13,11 +13,12 @@ module fifo_solver (
         input wire  [SIZE-1:0] option,
         
         input wire valid_op,
-        input wire [2*SIZE:0] [6:0] old_options_amnt,//Taken from the BRAM in the top level- how many options for this line
+        input wire [2*SIZE:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
+        //Taken from the BRAM in the top level- how many options for this line
 
         output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
-        output logic new_option_num, // for the BRAM gonna either be same as option num or 1 less
+        output logic [6:0] new_option_num, // for the BRAM gonna either be same as option num or 1 less
         output logic valid_out
     );
 

@@ -3,27 +3,27 @@
 
 module fifo_solv_tb;
 
-    
     logic clk;
     logic rst;
+    logic [2:0] option;
     logic valid_in;
     logic [1023:0] read_FIFO;
     logic [6:0] options_per_line;
-    logic [size-1:0]assigned [size-1:0];
-    logic [6:0] new_options_amnt;
+    logic [6:0] options_amnt;
     logic write_to_fifo;
-    logic [1023:0] dout;
     logic [4:0] line_ind;
-    logic [11:0] assigned_board [size-1:0]
-    
+    logic [2:0] [2:0] assigned_board ;
+    logic valid_out;
+
+
     fifo_solver solv (
         .clk(clk),
         .rst(rst),
-        .read_FIFO(read_FIFO),
-        .options_per_line(options_per_line),  
-        .new_options_amnt(new_options_amnt), 
+        .valid_op(valid_in),
+        .put_back_to_FIFO(write_to_fifo),  
+        .new_option_num(options_amnt), 
         .assigned(assigned_board),
-        .doubt(doubt),
+        .valid_out(valid_out)
     );
 
     always begin
@@ -36,21 +36,22 @@ module fifo_solv_tb;
         $display("Starting Sim FIFO Solver");
         clk = 0;
         rst = 0;
-        //valid_in = 0;
+        valid_in = 0;
         #5;
         rst = 1;
         #10;
         rst = 0;
 
-        line_ind = 4'b0;
-        options = 00000000101;
-        options = 000000000010000000001000000000100;//ask aobut how to combine options
-        read_FIFO = 1;
-        options_per_line = 3;
+        //test the special one case
+        valid_in = 1;
+        option = 3'b101;
+        options_per_line[0] = 1;
+        #5;
 
-        $display("new options amount %d", new_options_amnt);
+        $display("put this back in FIFO should be 0 but we got %b", put_back_to_FIFO);
         $display("the assignments made to the board",assigned_board);//ask about how to print out all the assignments
-        $display("new board line is %b" doubt);
+        $display("the amount of options left sohuld be 0 but is %b", options_amnt);
+        $display("valid out sohuld be 1 but is %b", valid_out);
 
 
         $display("Finishing Sim");
