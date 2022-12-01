@@ -10,7 +10,7 @@ module solver (
         //TODO: confirm sizes for everything
         input wire clk,
         input wire rst,
-        input wire start_solver, //indicates board has been parsed, ready to solve
+        input wire started, //indicates board has been parsed, ready to solve
         input wire  [SIZE-1:0] option,
         
         input wire valid_op,
@@ -19,13 +19,12 @@ module solver (
 
         output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
-        output logic [6:0] new_option_num, // for the BRAM gonna either be same as option num or 1 less
-        output logic valid_out
+        output logic solved //1 when solution is good
     );
 
         parameter SIZE = 3;
         logic [2*SIZE:0] [6:0] options_amnt; 
-        logic [$clog2(SIZE):0] line_ind;
+        logic [$clog2(SIZE)*2 :0] line_ind;
         logic row;
         assign row = line_ind < SIZE;
         logic  [SIZE-1:0] [SIZE-1:0] known;
@@ -47,8 +46,6 @@ module solver (
 
         logic [SIZE-1:0] always1;// a and b
         logic [SIZE-1:0] always0;
-
-        logic started;
 
         simplify #( (SIZE))simplify_m(
         .clk(clk),

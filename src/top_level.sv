@@ -25,6 +25,7 @@ module top_level (
     logic [1:0] state;
     logic [15:0] fifo_in, fifo_out;
     logic fifo_empty, fifo_full;
+    logic solved;
     logic [3:0] n,m; // HARDCODED for 11x11
     logic [4:0] [6:0] options_per_line; // HARDCODED for 11x11
     logic [10:0] [10:0] solution; // HARDCODED for 11x11
@@ -69,12 +70,27 @@ module top_level (
     );
 
     //solver Module
+    solver solve (
+        //TODO: confirm sizes for everything
+        .clk(clk_100mhz),
+        .rst(rst),
+        .started(board_done), //indicates board has been parsed, ready to solve
+        .option(fifo_out),
+        
+        .valid_op(next_line),
+        .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
+        //Taken from the BRAM in the top level- how many options for this line
+
+        .assigned(solution),  
+        .put_back_to_FIFO(line_done),  //boolean- do we need to push to fifo
+        .solved(solved) // board is 
+    );
 
 
     assembler assemble (
         .clk(clk_100mhz),
         .rst(rst),
-        .valid_in(),
+        .valid_in(solved),
         .transmit_busy(~transmit_done),
         .solution(solution),
         .n(n),  //11x11
