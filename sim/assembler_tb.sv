@@ -9,38 +9,29 @@
 
 `define STOP 16'b00000000_00000000
 
-module parser_tb;
-
-    logic [7:0] byte_in;
+module assembler_tb;
 
     logic clk;
     logic rst;
     logic valid_in;
-
-    logic board_done;
-    logic write_ready;
-    logic [15:0] line;
-
-    logic [4:0] [6:0] options_per_line;
-
+    logic busy;
+    logic [10:0] [10:0] solution;
     logic [3:0] n,m;
 
-    logic [111:0] serial_bits;
+    logic transmit_ready;
+    logic [7:0] byte_out;
 
-    parser uut (
+    assembler uut (
         .clk(clk),
         .rst(rst),
-        .byte_in(byte_in),
         .valid_in(valid_in),
-        
-        .board_done(board_done),
-        .write_ready(write_ready),
-        .line(line),
+        .transmit_busy(busy),
+        .solution(solution),
+        .n(n),  //11x11
+        .m(m),  //11x11
 
-        // assuming 11x11 max board
-        .options_per_line(options_per_line),
-        .n(n),
-        .m(m)
+        .transmit_ready(transmit_ready),
+        .byte_out(byte_out)
     );
 
 
@@ -50,11 +41,12 @@ module parser_tb;
     end
 
     initial begin
-        $dumpfile("parser.vcd");
-        $dumpvars(0, parser_tb);
+        $dumpfile("assembler.vcd");
+        $dumpvars(0, assembler_tb);
         $display("Starting Sim Parser");
         clk = 0;
         rst = 0;
+        busy = 1;
         valid_in = 0;
         #5;
         rst = 1;

@@ -5,9 +5,10 @@ module assembler(
         input wire clk,
         input wire rst,
         input wire valid_in,
+        input wire transmit_busy,
         input wire [10:0] [10:0] solution,
 
-        output logic valid_out,
+        output logic transmit_ready,
         output logic [7:0] byte_out,
 
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
@@ -54,7 +55,7 @@ module assembler(
 
     always_ff @(posedge clk)begin
         if (rst)begin
-            valid_out <= 0;
+            transmit_ready <= 0;
             byte_out <= 0;
             buffer <= 0;
             count <= 0;
@@ -63,65 +64,68 @@ module assembler(
             col_index <= 0;
             row <= 0;
         end else begin
-            if (count)begin //second half of message
-                count <= 0;
-                valid_out <= 1;
-            end
+            if (transmit_busy) transmit_ready <= 0;
             else begin
-                case(state)
-                    IDLE: begin
-                        if (valid_in)begin
-                            flag <= START_BOARD;
-                            assignment_index <= m;
+                if (count)begin //second half of message
+                    count <= 0;
+                    transmit_ready <= 1;
+                end
+                else begin
+                    case(state)
+                        IDLE: begin
+                            if (valid_in)begin
+                                flag <= START_BOARD;
+                                assignment_index <= m;
+                                assignment_value <= 0;
+                                count <= 1;
+                                transmit_ready <= 1;
+                                state <= START;
+                            end
+                        end
+                        START: begin
+                            assignment_index <= n;
+                            count <= 1;
+                            transmit_ready <= 1;
+                            state <= NEW_LINE;
+                        end
+                        NEW_LINE: begin
+                            flag <= START_LINE;
+                            assignment_index <= 12'b0;
                             assignment_value <= 0;
                             count <= 1;
-                            valid_out <= 1;
-                            state <= START;
+                            transmit_ready <= 1;
+                            state <= ASSIGN;
+                            row <= solution[row_index];
+                            col_index <= 0;
                         end
-                    end
-                    START: begin
-                        assignment_index <= n;
-                        count <= 1;
-                        valid_out <= 1;
-                        state <= NEW_LINE;
-                    end
-                    NEW_LINE: begin
-                        flag <= START_LINE;
-                        assignment_index <= 12'b0;
-                        assignment_value <= 0;
-                        count <= 1;
-                        valid_out <= 1;
-                        state <= ASSIGN;
-                        row <= solution[row_index];
-                        col_index <= 0;
-                    end
-                    ASSIGN: begin
-                        flag <= AND;
-                        assignment_index <= col_index;
-                        assignment_value <= row[col_index];
-                        count <= 1;
-                        if (col_index + 1 < n) col_index <= col_index + 1;
-                        else state <= STOP_LINE;
-                    end
-                    STOP_LINE: begin
-                        flag <= END_LINE;
-                        assignment_index <= 12'b0;
-                        assignment_value <= 0;
-                        count <= 1;
-                        valid_out <= 1;
-                        if (row_index + 1 < m)begin
-                            row_index <= row_index + 1;
-                            state <= NEW_LINE;
-                        end else state <= STOP;
-                    end
-                    STOP: begin
-                        flag <= END_BOARD;
-                        assignment_index <= 12'b0;
-                        assignment_value <= 0;
-                        state <= IDLE;
-                    end
-                    default: valid_out <= 0;
-                endcase
+                        ASSIGN: begin
+                            flag <= AND;
+                            assignment_index <= col_index;
+                            assignment_value <= row[col_index];
+                            count <= 1;
+                            if (col_index + 1 < n) col_index <= col_index + 1;
+                            else state <= STOP_LINE;
+                        end
+                        STOP_LINE: begin
+                            flag <= END_LINE;
+                            assignment_index <= 12'b0;
+                            assignment_value <= 0;
+                            count <= 1;
+                            transmit_ready <= 1;
+                            if (row_index + 1 < m)begin
+                                row_index <= row_index + 1;
+                                state <= NEW_LINE;
+                            end else state <= STOP;
+                        end
+                        STOP: begin
+                            flag <= END_BOARD;
+                            assignment_index <= 12'b0;
+                            assignment_value <= 0;
+                            state <= IDLE;
+                        end
+                        default: transmit_ready <= 0;
+                    endcase
+                end
             end
         end
     end

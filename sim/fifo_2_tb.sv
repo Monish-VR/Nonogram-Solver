@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-module fifo2_tb();
+module fifo_2_tb();
 
 //3X3 board
 
@@ -20,7 +20,7 @@ module fifo2_tb();
 
 //SHOULD WE ADD M N ROW AND SUCH
 
-    Fifo_solver2 uut (
+    solver uut (
         .clk(clk),
         .rst(rst),
         .valid_in(valid_in),

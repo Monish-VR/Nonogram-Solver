@@ -6,10 +6,11 @@
 //packed arrays give the values the opposite way from what we expect, so array of 3X3, 
 //when we call array[0] it will give the last 3 bits
 
-module fifo_solver (
+module solver (
         //TODO: confirm sizes for everything
         input wire clk,
         input wire rst,
+        input wire start_solver, //indicates board has been parsed, ready to solve
         input wire  [SIZE-1:0] option,
         
         input wire valid_op,

@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-module FIFO_tb;
+module fifo_tb;
 
     
     logic clk;
@@ -20,7 +20,7 @@ module FIFO_tb;
      logic new_option_num; // for the BRAM gonna either be same as option num or 1 less
      logic valid_out;
     
-    fifo_solver  solver (
+    solver uut (
         .clk(clk),
         .rst(rst),
         .option(option),

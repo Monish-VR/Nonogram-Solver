@@ -75,11 +75,12 @@ module top_level (
         .clk(clk_100mhz),
         .rst(rst),
         .valid_in(),
+        .transmit_busy(~transmit_done),
         .solution(solution),
         .n(n),  //11x11
         .m(m),  //11x11
 
-        .valid_out(transmit_valid),
+        .transmit_ready(transmit_valid),
         .byte_out(transmit_data)
     );
 
