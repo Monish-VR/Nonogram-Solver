@@ -13,17 +13,19 @@ module fifo_solver (
         input wire  [SIZE-1:0] option,
         
         input wire valid_op,
-        input wire [2*SIZE:0] [6:0] options_amnt,//Taken from the BRAM in the top level- how many options for this line
+        input wire [2*SIZE:0] [6:0] old_options_amnt,//Taken from the BRAM in the top level- how many options for this line
 
         output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
-        // output logic new_option_num, // for the BRAM gonna either be same as option num or 1 less
+        output logic new_option_num, // for the BRAM gonna either be same as option num or 1 less
         output logic valid_out
     );
 
-        logic [$clog2(SIZE)] line_ind;
-        assign row = line_ind < SIZE;
         parameter SIZE = 3;
+        logic [2*SIZE:0] [6:0] options_amnt; 
+        logic [$clog2(SIZE):0] line_ind;
+        logic row;
+        assign row = line_ind < SIZE;
         logic  [SIZE-1:0] [SIZE-1:0] known;
         
         logic valid_in_simplify;
@@ -98,7 +100,6 @@ module fifo_solver (
             assigned <= 0;
             valid_out <=0;
             net_valid_opts <=0;
-            last_valid_option<=0;
             started <=0;
             one_option_case <= 0;
 
@@ -153,10 +154,11 @@ module fifo_solver (
                 end
 
             end else begin
-                //first line logic
+                //first round logic
+                options_amnt <= old_options_amnt;
                 started <= 1;
-                options_left <= options_amnt[0];
-                if (options_amnt[0] == 1)begin
+                options_left <= old_options_amnt[0];
+                if (old_options_amnt[0] == 1)begin
                     one_option_case <= 1;
                 end else begin
                     one_option_case <= 0;
@@ -171,12 +173,12 @@ module fifo_solver (
             if  (row) begin
                 for(integer i = 0; i < SIZE; i = i + 1) begin
                     if (always1[i] == 1) begin 
-                        known[line_ind][i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[line_ind][i] <= 1;
+                        known[i*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i*SIZE + line_ind] <= 1;
                     end
                     if (always0[i] == 1) begin 
-                        known[line_ind][i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[line_ind][i] <= 0;
+                        known[i*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i*SIZE + line_ind] <= 0;
                     end
                 end
             end else if (~row) begin
@@ -185,12 +187,12 @@ module fifo_solver (
                     // I think the row we indexing into is i
                     //and the column is line index-size
                     if (always1[i] == 1) begin 
-                        known[i][line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i][line_ind - SIZE] <= 1;
+                        known[i*SIZE - line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i*SIZE - line_ind - SIZE] <= 1;
                     end
                     if (always0[i] == 1) begin 
-                        known[i][line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i][line_ind - SIZE] <= 0;
+                        known[i*SIZE - line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[i*SIZE - line_ind - SIZE] <= 0;
                     end
                 end
             end
@@ -198,25 +200,8 @@ module fifo_solver (
                 //but that feels jank so maybe lets ask in office hours first?
 
             end
-            
-            
-            
-            //@DANA- I moved this code up, look at the logic for one_option_case
-            //if (net_valid_opts == 1) begin
-                //only one valid option
-                // put_back_to_FIFO <= 0;
-                // if (row) begin
-                //     known[line_ind] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                //     assigned[line_ind] <= last_valid_option;
-                // end else begin
-                //     for(integer row = 0; row < SIZE; row = row + 1) begin
-                //         known[row*SIZE + line_ind] <= 1;
-                //         assigned[row*SIZE + line_ind] <= last_valid_option[row];
-                //     end
-                // end
-            //end
+        
         end
-    end
 
 endmodule
 
