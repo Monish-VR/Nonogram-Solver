@@ -23,10 +23,6 @@ module parser(
         TODO
     */
 
-    // states
-    localparam RECEIVE = 0;
-    localparam PARSE = 1;
-
     // message flags
     localparam START_BOARD = 3'b111;
     localparam END_BOARD = 3'b000;
