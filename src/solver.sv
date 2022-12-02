@@ -24,7 +24,7 @@ module solver (
 
         parameter SIZE = 3;
         logic [2*SIZE:0] [6:0] options_amnt; 
-        logic [$clog2(SIZE)*2 :0] line_ind;
+        logic [SIZE-1:0] line_ind; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
         logic row;
         assign row = line_ind < SIZE;
         logic  [SIZE-1:0] [SIZE-1:0] known;
@@ -99,7 +99,7 @@ module solver (
             assigned <= 0;
             valid_out <=0;
             net_valid_opts <=0;
-            started <=0;
+            // started <=0;
             one_option_case <= 0;
 
         end else if (one_option_case && simp_valid) begin
@@ -132,17 +132,13 @@ module solver (
 
         //transition to new line, reset some registers
         //first line logic is now also here (avoids repetitive code)
-        end else if (options_left == 0 || started == 0) begin
+        end else if (options_left == 0 || started == 1) begin
             //TODO: maybe break this into 2 clock cycles, one where we process old values and one where we assign the new ones
             //unsure if thats nessessary
             
-            //@DANA - what do you think of combining the starter code logic with this code?
-            //@Nina - I think it's ok, the thing is that it will only understand that it has one option after a whole iteration over the FIFO
-            // thats what I tried to avoid with the code from before, (under transition check if #option==1) 
-            //which i agree may have been wrong as it does put it into fifo tho.., but I tried to immidiate 
-            //identify when we have only one option when we transition.  
-
-            if (started == 1) begin
+            //@Nina I think we need to change the value of started- we get 1 when we need to start the board
+            //and its 0 after we got the first sign
+            if (started == 0) begin
                 options_amnt[line_ind] <= net_valid_opts;
                 options_left <= options_amnt[option];
                 //@Nina I think here we done with a line, since we dont have options to check
@@ -155,7 +151,7 @@ module solver (
             end else begin
                 //first round logic
                 options_amnt <= old_options_amnt;
-                started <= 1;
+                // started <= 1;
                 options_left <= old_options_amnt[0];
                 if (old_options_amnt[0] == 1)begin
                     one_option_case <= 1;
@@ -180,8 +176,9 @@ module solver (
                         assigned[i*SIZE + line_ind] <= 0;
                     end
                 end
+
             end else if (~row) begin
-                
+
                 for(integer i = 0; i < SIZE; i = i + 1) begin
                     // I think the row we indexing into is i
                     //and the column is line index-size
