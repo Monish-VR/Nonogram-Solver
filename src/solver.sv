@@ -18,6 +18,7 @@ module solver (
         //Taken from the BRAM in the top level- how many options for this line
 
         output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
+        output logic  [SIZE-1:0]  [SIZE-1:0] known,
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
         output logic solved //1 when solution is good
     );
@@ -27,7 +28,7 @@ module solver (
         logic [SIZE-1:0] line_ind; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
         logic row;
         assign row = line_ind < SIZE;
-        logic  [SIZE-1:0] [SIZE-1:0] known;
+        // logic  [SIZE-1:0] [SIZE-1:0] known;
         
         logic valid_in_simplify;
 
@@ -97,7 +98,7 @@ module solver (
         if(rst)begin
             known <= 0;
             assigned <= 0;
-            valid_out <=0;
+            // valid_out <=0;
             net_valid_opts <=0;
             // started <=0;
             one_option_case <= 0;
@@ -126,7 +127,7 @@ module solver (
                     always1 <= always1 && option;
                     always0 <= always0 && ~option;
                 end
-                valid_out<=1;
+                // valid_out<=1;
                 options_left <= options_left - 1 ;
             end
 
