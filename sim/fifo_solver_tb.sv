@@ -2,13 +2,9 @@
 `timescale 1ns / 1ps
 
 `define status(OPT, KNOWNS) \
-$display(" lsdt option was %b, known is: %b", OPT, KNOWNS );
-
-// $display(" %b  %b  %b \n %b  %b  %b \n %b  %b  %b ", KNOWNS[0][0], KNOWNS[0][1], KNOWNS[0][2], 
-//                                                     KNOWNS[1][0], KNOWNS[1][1], KNOWNS[1][2],
-//                                                     KNOWNS[2][0], KNOWNS[2][1], KNOWNS[2][2]);
-// $display(" %b  %b  %b \n", KNOWNS[1][0], KNOWNS[1][1], KNOWNS[1][2]);
-// $display(" %b  %b  %b \n", KNOWNS[2][0], KNOWNS[2][1], KNOWNS[2][2]);
+$display("new board: %b  %b  %b \n", KNOWNS[0][0], KNOWNS[0][1], KNOWNS[0][2]); \
+$display(" %b  %b  %b \n", KNOWNS[1][0], KNOWNS[1][1], KNOWNS[1][2]); \
+$display(" %b  %b  %b \n", KNOWNS[2][0], KNOWNS[2][1], KNOWNS[2][2]); 
 // $display(" %b  %b  %b \n", KNOWNS);
 
 // $display("\n");
@@ -26,7 +22,7 @@ module fifo_solver_tb;
     logic [2:0]  [2:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
      logic put_back_to_FIFO;  //boolean- do we need to push to fifo
      logic solved ;
-     logic [2:0]  [2:0] known;
+     logic [0:2]  [2:0] known;
 
 
     solver uut (
@@ -46,7 +42,7 @@ module fifo_solver_tb;
         clk = !clk;
     end
     initial begin
-        $dumpfile("fifo_solv.vcd");
+        $dumpfile("fifo_solver.vcd");
         $dumpvars(0, fifo_solver_tb);
         $display("Starting Sim FIFO Solver");
         clk = 0;
@@ -82,16 +78,21 @@ module fifo_solver_tb;
         old_options_amnt[5] = 3;
         `status(option,known);
         #10;
+
+        started = 0;
+
         option = 3'b110 ; //row 1 first opt
         valid_in = 1;
         `status(option,known);
         #10;
+        // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         option = 3'b011 ; //row 1 2 opt
         valid_in = 1;
         $display("should assign cell [0] [1] to be known");
         `status(option, known);
         #10;
         // should assign cell [0] [1] to be known
+
 
         option = 3'b001 ; //row 2 line index
         valid_in = 1;
