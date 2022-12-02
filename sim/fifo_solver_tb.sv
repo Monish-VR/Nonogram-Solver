@@ -6,7 +6,7 @@ $display(" %b | %b | %b \n", known[0][0], known[0][1], known[0][2]);
 $display(" %b | %b | %b \n", known[1][0], known[1][1], known[1][2]);
 $display(" %b | %b | %b \n", known[2][0], known[2][1], known[2][2]);
 $display("\n");
-$display(next_line);
+$display("option", option);
 $display("\n");
 
 module fifo_solv_tb;
@@ -44,21 +44,17 @@ module fifo_solv_tb;
         clk = 0;
         rst = 0;
         valid_in = 0;
-        #5;
+        #10;
         rst = 1;
         #10;
         rst = 0;
-        //@Ninas test commented:
-        // //test the special one case
-        // valid_in = 1;
-        // option = 3'b101;
-        // options_per_line[0] = 1;
-        // #5;
         #10;
-        //create a board which is :
+
+        //BOARD :
         // 1 1 0
         // 0 1 0
         // 1 0 1
+
         // row 1 : 110 011
         //row 2: 100 010 001
         //row 3: 101
@@ -71,7 +67,6 @@ module fifo_solv_tb;
         option = 0 ; //first line index 
         valid_in = 1;
         old_options_amnt = [[2],[3],[1],[1],[2],[3]]; //logic [2*SIZE:0] [6:0]
-        
         status();
         #10;
         option = 3'b110 ; //row 1 first opt
@@ -80,8 +75,11 @@ module fifo_solv_tb;
         #10;
         option = 3'b011 ; //row 1 2 opt
         valid_in = 1;
+        $display("should assign cell [0] [1] to be known");
         status();
         #10;
+        // should assign cell [0] [1] to be known
+
         option = 3'b001 ; //row 2 line index
         valid_in = 1;
         status();
@@ -98,16 +96,18 @@ module fifo_solv_tb;
         valid_in = 1;
         status();
         #10;
+
         option = 3'b010  ; //row 3 line ind (==2)
         valid_in = 1;
         status();
         #10;
-
         //SHOULD HAVE ONLY ONE OPTION SO ASSIGN:
         option = 3'b101  ; //row 3 opt 1
         valid_in = 1;
+        $display("should assign whole third row to be known");
         status();
         #10;
+    // SHOULD assign whole third row to be known
 
         option = 3'b011  ; //col 1 line ind 
         valid_in = 1;
@@ -115,8 +115,11 @@ module fifo_solv_tb;
         #10;
         option = 3'b101  ; //col 1 opt 1 
         valid_in = 1;
+        $display("should assign cells [1][0] and [2][0] to be known");
         status();
         #10;
+        // should assign cells [1][0] and [2][0] to be known
+
         option = 3'b100  ; //col 2 line ind 
         valid_in = 1;
         status();
@@ -127,18 +130,23 @@ module fifo_solv_tb;
         #10;
         option = 3'b011 ; //col 2 2 opt
         valid_in = 1;
+        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         status();
         #10;
+
+        // $display("options for col 2 should be 1. opt for col 2: %b", options_amnt); DANA: need to return options if we wanna check that
         option = 3'b101  ; //col 3 line ind 
         valid_in = 1;
         status();
         #10;
         option = 3'b100 ; //col 3 opt 1
+        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         valid_in = 1;
         status();
         #10;
         option = 3'b010  ; //col 3 opt 2
         valid_in = 1;
+        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         status();
         #10;
         option = 3'b001  ; //col 3 opt 3
@@ -147,10 +155,14 @@ module fifo_solv_tb;
         #10;
 
 
-        $display("put this back in FIFO should be 0 but we got %b", put_back_to_FIFO);
-        $display("the assignments made to the board",assigned_board);//ask about how to print out all the assignments
-        $display("the amount of options left sohuld be 0 but is %b", options_amnt);
-        $display("valid out sohuld be 1 but is %b", valid_out);
+        // $display("put this back in FIFO should be 0 but we got %b", put_back_to_FIFO);
+        $display("the assignments made to the board",assigned_board);//should not be totally 
+        //correct since we havent filled it, but all the spots of 1 should be correct
+
+
+        //ask about how to print out all the assignments
+        // $display("the amount of options left sohuld be 0 but is %b", options_amnt);
+        // $display("valid out sohuld be 1 but is %b", valid_out);
 
 
         $display("Finishing Sim");
