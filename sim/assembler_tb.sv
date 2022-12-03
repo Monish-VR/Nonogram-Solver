@@ -43,7 +43,7 @@ module assembler_tb;
     initial begin
         $dumpfile("assembler.vcd");
         $dumpvars(0, assembler_tb);
-        $display("Starting Sim Parser");
+        $display("Starting Sim Assembler");
         clk = 0;
         rst = 0;
         busy = 1;
@@ -54,89 +54,7 @@ module assembler_tb;
         rst = 0;
         #10;
 
-        serial_bits = `START_N;
-
-        for (int i = 15; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `START_M;
-
-        for (int i = 15; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `LINE_1_4;
-
-        for (int i = 63; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `LINE_2_3;
-
-        for (int i = 111; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `LINE_2_3;
-
-        for (int i = 111; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `LINE_1_4;
-
-        for (int i = 63; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #20;
-
-        serial_bits = `STOP;
-
-        for (int i = 15; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-        end
-
-        #100;
+        
 
         $display("Finishing Sim");
         $finish;

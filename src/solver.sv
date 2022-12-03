@@ -14,18 +14,19 @@ module solver (
         input wire  [SIZE-1:0] option,
         
         input wire valid_op,
-        input wire [2*SIZE:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
+        input wire [(2*SIZE) - 1:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
 
-        output logic  [SIZE-1:0]  [SIZE-1:0] assigned,  
-        output logic  [SIZE-1:0]  [SIZE-1:0] known,
+        output logic  [SIZE*SIZE - 1:0] assigned,  //changed to 1D array for correct indexing
+        output logic  [SIZE*SIZE - 1:0] known,      // changed to 1D array for correct indexing
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
         output logic solved //1 when solution is good
     );
 
         parameter SIZE = 3;
-        logic [2*SIZE:0] [6:0] options_amnt; 
-        logic [SIZE-1:0] line_ind; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
+        logic [(2*SIZE) - 1:0] [6:0] options_amnt; 
+        logic [(2*SIZE)-1:0] line_ind; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
+                                       //(veronica) changed again to match options amount (2*Size) -1
         logic row;
         assign row = line_ind < SIZE;
         // logic  [SIZE-1:0] [SIZE-1:0] known;
@@ -60,22 +61,22 @@ module solver (
         );
 
 
-    logic  [SIZE-1:0]  [SIZE-1:0] known_t; //transpose
-    logic  [SIZE-1:0]  [SIZE-1:0] assigned_t; //transpose
+    logic  [SIZE*SIZE-1:0] known_t; //transpose
+    logic  [SIZE*SIZE-1:0] assigned_t; //transpose
 
 
     //TRANSPOSING:
-    genvar m;
-    genvar n;
+    genvar m; //rows
+    genvar n; //cols
     for(m = 0; m < SIZE; m = m + 1) begin
         for(n = 0; n < SIZE; n = n + 1) begin
-
-            assign known_t[n][m] = known[m][n];
-            assign assigned_t[n][m] = assigned[m][n];
+            assign known_t[n*SIZE + m] = known[m*SIZE + n];
+            assign assigned_t[n*SIZE + m] = assigned[m*SIZE + n];
         end
     end
 
 //Grab the line from relevant known and assigned blocks
+//@NINA - I didn't know how to change this to reflect 1D arrays
     always_comb begin
         if (options_left > 0) begin
             valid_in_simplify = 1;
@@ -106,15 +107,15 @@ module solver (
         end else if (one_option_case && simp_valid) begin
             put_back_to_FIFO <= 0;
             if (row) begin
-                known[line_ind] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                assigned[line_ind] <= option;
+                known[line_ind*SIZE +: SIZE] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                assigned[line_ind*SIZE +: SIZE] <= 3'b101;
             end else begin
-                for(integer row = 0; row < SIZE; row = row + 1) begin
-                    known[row*SIZE + line_ind] <= 1;
-                    assigned[row*SIZE + line_ind] <= option[row];
+                for(integer j = 0; j < SIZE; j = j + 1) begin
+                    known[j*SIZE + line_ind] <= 1;
+                    assigned[j*SIZE + line_ind] <= option[j];
                 end
             end
-         
+            options_left <= options_left - 1 ;
         //if we have options left to check:
         end else if (options_left > 0 && simp_valid == 1)begin
             if (simp_valid) begin       
@@ -124,8 +125,8 @@ module solver (
                     //last_valid_option <= option;
                     put_back_to_FIFO <= 1;
                     net_valid_opts <= net_valid_opts + 1;
-                    always1 <= always1 && option;
-                    always0 <= always0 && ~option;
+                    always1 <= always1 & option;
+                    always0 <= always0 & ~option;
                 end
                 // valid_out<=1;
                 options_left <= options_left - 1 ;
@@ -169,27 +170,27 @@ module solver (
             if  (row) begin
                 for(integer i = 0; i < SIZE; i = i + 1) begin
                     if (always1[i] == 1) begin 
-                        known[i*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i*SIZE + line_ind] <= 1;
+                        known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[line_ind * SIZE + i] <= 1;
                     end
                     if (always0[i] == 1) begin 
-                        known[i*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i*SIZE + line_ind] <= 0;
+                        known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[line_ind * SIZE + i] <= 0;
                     end
                 end
 
             end else if (~row) begin
 
-                for(integer i = 0; i < SIZE; i = i + 1) begin
-                    // I think the row we indexing into is i
+                for(integer j = 0; j < SIZE; j = j + 1) begin
+                    // I think the row we indexing into is j
                     //and the column is line index-size
-                    if (always1[i] == 1) begin 
-                        known[i*SIZE - line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i*SIZE - line_ind - SIZE] <= 1;
+                    if (always1[j] == 1) begin 
+                        known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[j*SIZE + line_ind] <= 1;
                     end
-                    if (always0[i] == 1) begin 
-                        known[i*SIZE - line_ind - SIZE] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[i*SIZE - line_ind - SIZE] <= 0;
+                    if (always0[j] == 1) begin 
+                        known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                        assigned[j*SIZE + line_ind] <= 0;
                     end
                 end
             end
