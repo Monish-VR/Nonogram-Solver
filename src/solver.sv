@@ -77,7 +77,6 @@ module solver (
     end
 
 //Grab the line from relevant known and assigned blocks
-//@NINA - I didn't know how to change this to reflect 1D arrays
     always_comb begin
         //inputs to simplify
         //gets relevant line from assigned and known
@@ -87,11 +86,10 @@ module solver (
                 assi_simp = assigned[SIZE*line_ind];
                 known_simp = known[SIZE*line_ind];
             end else begin
-                assi_simp = assigned_t[SIZE*line_ind];
-                known_simp = known_t[SIZE*line_ind];
+                assi_simp = assigned_t[SIZE*(line_ind - SIZE)];
+                known_simp = known_t[SIZE*(line_ind - SIZE)];
             end
-        end
-        else begin 
+        end else begin 
             //this is the case where the input to the queue is a line index
             valid_in_simplify = 0;
         end
@@ -119,31 +117,31 @@ module solver (
                 //check the winning case
                 solved <= (known == -1);
 
-                //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
-                if (row) begin
-                    for(integer i = 0; i < SIZE; i = i + 1) begin
-                        if (always1[i] == 1) begin 
-                            known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                            assigned[line_ind * SIZE + i] <= 1;
+                if (!one_option_case)begin
+                    //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
+                    if (row) begin
+                        for(integer i = 0; i < SIZE; i = i + 1) begin
+                            if (always1[i] == 1) begin 
+                                known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                assigned[line_ind * SIZE + i] <= 1;
+                            end
+                            if (always0[i] == 1) begin 
+                                known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                assigned[line_ind * SIZE + i] <= 0;
+                            end
                         end
-                        if (always0[i] == 1) begin 
-                            known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                            assigned[line_ind * SIZE + i] <= 0;
-                        end
-                    end
-
-                end else if (~row) begin
-
-                    for(integer j = 0; j < SIZE; j = j + 1) begin
-                        // I think the row we indexing into is j
-                        //and the column is line index-size
-                        if (always1[j] == 1) begin 
-                            known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                            assigned[j*SIZE + line_ind] <= 1;
-                        end
-                        if (always0[j] == 1) begin 
-                            known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                            assigned[j*SIZE + line_ind] <= 0;
+                    end else begin
+                        for(integer j = 0; j < SIZE; j = j + 1) begin
+                            // I think the row we indexing into is j
+                            //and the column is line index-size
+                            if (always1[j] == 1) begin 
+                                known[j*SIZE + (line_ind-SIZE)] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                assigned[j*SIZE + (line_ind-SIZE)] <= 1;
+                            end
+                            if (always0[j] == 1) begin 
+                                known[j*SIZE + (line_ind-SIZE)] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                assigned[j*SIZE + (line_ind - SIZE)] <= 0;
+                            end
                         end
                     end
                 end
@@ -162,12 +160,12 @@ module solver (
                     assigned[line_ind*SIZE +: SIZE] <= 3'b101;
                 end else begin
                     for(integer j = 0; j < SIZE; j = j + 1) begin
-                        known[j*SIZE + line_ind] <= 1;
-                        assigned[j*SIZE + line_ind] <= option[j];
+                        known[j*SIZE + (line_ind-SIZE)] <= 1;
+                        assigned[j*SIZE + (line_ind - SIZE)] <= option[j];
                     end
                 end
                 options_left <= options_left - 1 ;
-            end else if (options_left > 0 && simp_valid == 1)begin
+            end else if (options_left > 0 && simp_valid)begin
                 if (simp_valid) begin       
                     if (contradict)begin
                         put_back_to_FIFO <= 0;
