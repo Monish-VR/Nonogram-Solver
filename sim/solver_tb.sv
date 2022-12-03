@@ -34,6 +34,8 @@ module solver_tb;
         .rst(rst),
         .started(started),
         .option(option),
+        .num_rows(4'd3),
+        .num_cols(4'd3),
         .valid_op(valid_in),
         .old_options_amnt(old_options_amnt),
         .put_back_to_FIFO(put_back_to_FIFO),  

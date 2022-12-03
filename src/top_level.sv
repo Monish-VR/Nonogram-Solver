@@ -76,11 +76,13 @@ module top_level (
         .rst(rst),
         .started(board_done), //indicates board has been parsed, ready to solve
         .option(fifo_out),
-        
+        .num_rows(m),
+        .num_cols(n),
         .valid_op(next_line),
         .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
 
+        .new_option(fifo_in),
         .assigned(solution),  
         .put_back_to_FIFO(line_done),  //boolean- do we need to push to fifo
         .solved(solved) // board is 

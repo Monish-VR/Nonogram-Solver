@@ -13,7 +13,7 @@ module solver (
         input wire started, //indicates board has been parsed, ready to solve
         input wire [SIZE-1:0] option,
         input wire [3:0] num_rows,
-        input wire [3:0] now_cols,
+        input wire [3:0] num_cols,
         input wire valid_op,
         input wire [(2*SIZE) - 1:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
