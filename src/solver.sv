@@ -84,12 +84,11 @@ module solver (
         if (options_left > 0) begin
             valid_in_simplify = 1;
             if (row) begin
-                assi_simp = assigned[SIZE - line_ind ];
-                known_simp = known[SIZE - line_ind ];
-
+                assi_simp = assigned[SIZE*line_ind];
+                known_simp = known[SIZE*line_ind];
             end else begin
-                assi_simp = assigned_t[SIZE - line_ind ];
-                known_simp = known_t[SIZE - line_ind ];
+                assi_simp = assigned_t[SIZE*line_ind];
+                known_simp = known_t[SIZE*line_ind];
             end
         end
         else begin 
@@ -107,107 +106,85 @@ module solver (
             // started <=0;
             one_option_case <= 0;
             solved <= 0;
+        end else begin
+            if (started)begin
+                options_amnt <= old_options_amnt;
+                options_left <= old_options_amnt[option];
+                one_option_case <= old_options_amnt[option] == 1;
+                line_ind <= option;
+                net_valid_opts <= 0;
+                always1 <= -1;
+                always0 <= -1;
+            end else if (!options_left)begin
+                //check the winning case
+                solved <= (known == -1);
 
-        end else if (one_option_case && simp_valid) begin
-            put_back_to_FIFO <= 0;
-            if (row) begin
-                known[line_ind*SIZE +: SIZE] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                assigned[line_ind*SIZE +: SIZE] <= 3'b101;
-            end else begin
-                for(integer j = 0; j < SIZE; j = j + 1) begin
-                    known[j*SIZE + line_ind] <= 1;
-                    assigned[j*SIZE + line_ind] <= option[j];
-                end
-            end
-            options_left <= options_left - 1 ;
-        //if we have options left to check:
-        end else if (options_left > 0 && simp_valid == 1)begin
-            if (simp_valid) begin       
-                if (contradict)begin
-                    put_back_to_FIFO <= 0;
-                end else begin
-                    //last_valid_option <= option;
-                    new_option <= option;
-                    put_back_to_FIFO <= 1;
-                    net_valid_opts <= net_valid_opts + 1;
-                    always1 <= always1 & option;
-                    always0 <= always0 & ~option;
-                end
-                // valid_out<=1;
-                options_left <= options_left - 1 ;
-            end
+                //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
+                if (row) begin
+                    for(integer i = 0; i < SIZE; i = i + 1) begin
+                        if (always1[i] == 1) begin 
+                            known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                            assigned[line_ind * SIZE + i] <= 1;
+                        end
+                        if (always0[i] == 1) begin 
+                            known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                            assigned[line_ind * SIZE + i] <= 0;
+                        end
+                    end
 
-        //transition to new line, reset some registers
-        //first line logic is now also here (avoids repetitive code)
-        end else if (options_left == 0 || started == 1) begin
-            //TODO: maybe break this into 2 clock cycles, one where we process old values and one where we assign the new ones
-            //unsure if thats nessessary
-            
-            //@Nina I think we need to change the value of started- we get 1 when we need to start the board
-            //and its 0 after we got the first sign
-            if (started == 0) begin
+                end else if (~row) begin
+
+                    for(integer j = 0; j < SIZE; j = j + 1) begin
+                        // I think the row we indexing into is j
+                        //and the column is line index-size
+                        if (always1[j] == 1) begin 
+                            known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                            assigned[j*SIZE + line_ind] <= 1;
+                        end
+                        if (always0[j] == 1) begin 
+                            known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                            assigned[j*SIZE + line_ind] <= 0;
+                        end
+                    end
+                end
+
                 options_amnt[line_ind] <= net_valid_opts;
                 options_left <= options_amnt[option];
-                //@Nina I think here we done with a line, since we dont have options to check
-                if (options_amnt[option] == 1) begin
-                    one_option_case <= 1;
+                one_option_case <= old_options_amnt[option] == 1;
+                line_ind <= option;
+                net_valid_opts <= 0;
+                always1 <= -1;
+                always0 <= -1;
+            end else if (one_option_case && simp_valid) begin
+                put_back_to_FIFO <= 0;
+                if (row) begin
+                    known[line_ind*SIZE +: SIZE] <= -1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                    assigned[line_ind*SIZE +: SIZE] <= 3'b101;
                 end else begin
-                    one_option_case <= 0;
-                end
-
-            end else begin
-                //first round logic
-                options_amnt <= old_options_amnt;
-                // started <= 1;
-                options_left <= old_options_amnt[0];
-                if (old_options_amnt[0] == 1)begin
-                    one_option_case <= 1;
-                end else begin
-                    one_option_case <= 0;
-                end
-            end
-            line_ind <= option;
-            net_valid_opts <= 0;
-            always1 <= -1;
-            always0 <= -1;
-
-            //check the winning case
-            solved <= (known == -1);
-
-            //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
-            if (row) begin
-                for(integer i = 0; i < SIZE; i = i + 1) begin
-                    if (always1[i] == 1) begin 
-                        known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[line_ind * SIZE + i] <= 1;
-                    end
-                    if (always0[i] == 1) begin 
-                        known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[line_ind * SIZE + i] <= 0;
+                    for(integer j = 0; j < SIZE; j = j + 1) begin
+                        known[j*SIZE + line_ind] <= 1;
+                        assigned[j*SIZE + line_ind] <= option[j];
                     end
                 end
-
-            end else if (~row) begin
-
-                for(integer j = 0; j < SIZE; j = j + 1) begin
-                    // I think the row we indexing into is j
-                    //and the column is line index-size
-                    if (always1[j] == 1) begin 
-                        known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[j*SIZE + line_ind] <= 1;
+                options_left <= options_left - 1 ;
+            end else if (options_left > 0 && simp_valid == 1)begin
+                if (simp_valid) begin       
+                    if (contradict)begin
+                        put_back_to_FIFO <= 0;
+                    end else begin
+                        //last_valid_option <= option;
+                        new_option <= option;
+                        put_back_to_FIFO <= 1;
+                        net_valid_opts <= net_valid_opts + 1;
+                        always1 <= always1 & option;
+                        always0 <= always0 & ~option;
                     end
-                    if (always0[j] == 1) begin 
-                        known[j*SIZE + line_ind] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
-                        assigned[j*SIZE + line_ind] <= 0;
-                    end
+                    // valid_out<=1;
+                    options_left <= options_left - 1 ;
                 end
             end
-                //right now my only idea is to have a for loop and go through the options and check 
-                //but that feels jank so maybe lets ask in office hours first?
-
-            end
-        
         end
+    end
 
 endmodule
 

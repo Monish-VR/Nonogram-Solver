@@ -83,23 +83,20 @@ module solver_tb;
         old_options_amnt[3] = 1;
         old_options_amnt[4] = 2;
         old_options_amnt[5] = 3;
-        `status(option,known,assigned);
         #10;
-
+        `status(option,known,assigned);
         started = 0;
-
         option = 3'b110 ; //row 1 opt 1
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
+        `status(option,known,assigned);
         // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         option = 3'b011 ; //row 1 opt 2
         valid_in = 1;
         $display("should assign cell [0] [1] to be known");
-        `status(option, known,assigned);
         #10;
+        `status(option, known,assigned);
         // should assign cell [0] [1] to be known
-
         option = 3'b001 ; //row 2 line index
         valid_in = 1;
         `status(option,known,assigned);
