@@ -11,14 +11,15 @@ module solver (
         input wire clk,
         input wire rst,
         input wire started, //indicates board has been parsed, ready to solve
-        input wire  [SIZE-1:0] option,
-        
+        input wire [SIZE-1:0] option,
+        input wire [3:0] num_rows,
+        input wire [3:0] now_cols,
         input wire valid_op,
         input wire [(2*SIZE) - 1:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
-
-        output logic  [SIZE*SIZE - 1:0] assigned,  //changed to 1D array for correct indexing
-        output logic  [SIZE*SIZE - 1:0] known,      // changed to 1D array for correct indexing
+        output logic [SIZE-1:0] new_option,
+        output logic [SIZE*SIZE - 1:0] assigned,  //changed to 1D array for correct indexing
+        output logic [SIZE*SIZE - 1:0] known,      // changed to 1D array for correct indexing
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
         output logic solved //1 when solution is good
     );
@@ -29,9 +30,9 @@ module solver (
                                        //(veronica) changed again to match options amount (2*Size) -1
         logic row;
         assign row = line_ind < SIZE;
-        // logic  [SIZE-1:0] [SIZE-1:0] known;
         
         logic valid_in_simplify;
+        
 
         logic [6:0] options_left; //options left to get from the fifo
         logic [6:0] net_valid_opts; //how many valid options we checked
@@ -78,6 +79,8 @@ module solver (
 //Grab the line from relevant known and assigned blocks
 //@NINA - I didn't know how to change this to reflect 1D arrays
     always_comb begin
+        //inputs to simplify
+        //gets relevant line from assigned and known
         if (options_left > 0) begin
             valid_in_simplify = 1;
             if (row) begin
@@ -103,6 +106,7 @@ module solver (
             net_valid_opts <=0;
             // started <=0;
             one_option_case <= 0;
+            solved <= 0;
 
         end else if (one_option_case && simp_valid) begin
             put_back_to_FIFO <= 0;
@@ -123,6 +127,7 @@ module solver (
                     put_back_to_FIFO <= 0;
                 end else begin
                     //last_valid_option <= option;
+                    new_option <= option;
                     put_back_to_FIFO <= 1;
                     net_valid_opts <= net_valid_opts + 1;
                     always1 <= always1 & option;
@@ -166,8 +171,11 @@ module solver (
             always1 <= -1;
             always0 <= -1;
 
+            //check the winning case
+            solved <= (known == -1);
+
             //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
-            if  (row) begin
+            if (row) begin
                 for(integer i = 0; i < SIZE; i = i + 1) begin
                     if (always1[i] == 1) begin 
                         known[line_ind * SIZE + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
