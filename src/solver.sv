@@ -83,11 +83,11 @@ module solver (
         if (options_left > 0) begin
             valid_in_simplify = 1;
             if (row) begin
-                assi_simp = assigned[SIZE*line_ind];
-                known_simp = known[SIZE*line_ind];
+                assi_simp = assigned[SIZE*line_ind +: SIZE];
+                known_simp = known[SIZE*line_ind +: SIZE];
             end else begin
-                assi_simp = assigned_t[SIZE*(line_ind - SIZE)];
-                known_simp = known_t[SIZE*(line_ind - SIZE)];
+                assi_simp = assigned_t[SIZE*(line_ind - SIZE) +: SIZE];
+                known_simp = known_t[SIZE*(line_ind - SIZE) +: SIZE];
             end
         end else begin 
             //this is the case where the input to the queue is a line index
@@ -111,12 +111,11 @@ module solver (
                 one_option_case <= old_options_amnt[option] == 1;
                 line_ind <= option;
                 net_valid_opts <= 0;
-                always1 <= -1;
-                always0 <= -1;
+                always1 <= '1;
+                always0 <= '1;
             end else if (!options_left)begin
                 //check the winning case
-                solved <= (known == -1);
-
+                solved <= known == '1;
                 if (!one_option_case)begin
                     //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row) begin
@@ -145,7 +144,6 @@ module solver (
                         end
                     end
                 end
-
                 options_amnt[line_ind] <= net_valid_opts;
                 options_left <= options_amnt[option];
                 one_option_case <= old_options_amnt[option] == 1;

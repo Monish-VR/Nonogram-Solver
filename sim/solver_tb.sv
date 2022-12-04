@@ -55,7 +55,7 @@ module solver_tb;
         clk = 0;
         rst = 0;
         valid_in = 0;
-        #10;
+        #5;
         rst = 1;
         #10;
         rst = 0;
@@ -179,7 +179,6 @@ module solver_tb;
         $display("the assignments made to the board",assigned);//should not be totally 
         //correct since we havent filled it, but all the spots of 1 should be correct
 
-
         //round 2:
         // row 1 : 110 011
         //row 2: 100 010 001
@@ -193,13 +192,13 @@ module solver_tb;
         `status(option,known,assigned);
         #10;
 
-        option = 3'b110 ; //row 1 opt 1
+        option = 3'b110 ; //row 1 opt 1 - put back into FIFO
         valid_in = 1;
         #10;
         `status(option,known,assigned);
 
         // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
-        option = 3'b011 ; //row 1 opt 2
+        option = 3'b011 ; //row 1 opt 2 - conflict; remove from FIFO
         valid_in = 1;
         #10;
         `status(option, known,assigned);
@@ -208,15 +207,15 @@ module solver_tb;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //row 2 opt 1
+        option = 3'b100 ; //row 2 opt 1 - conflict; remove from FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b010  ; //row 2 opt 2
+        option = 3'b010  ; //row 2 opt 2 - put back into FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //row 2 opt 3
+        option = 3'b001  ; //row 2 opt 3 - conflict; remove from FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -225,34 +224,38 @@ module solver_tb;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+
         option = 3'b011 ; //col 1 line index
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+
         option = 3'b100 ; //col 2 line index
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b110 ; //col 2 opt 1
+        option = 3'b110 ; //col 2 opt 1 - last option; remove from FIFO
         valid_in = 1;
         #10;
         `status(option,known,assigned);
+
         option = 3'b101 ; //col 3 line index
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001 ; //col 3 opt 1 //
+        option = 3'b001 ; //col 3 opt 1 - last option; remove from FIFO; [0][2] and [1][2] should be known (known complete => solved)
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-$display("is solved? %b",solved);
-#10;
-$display("is solved? %b",solved);
-#10;
-$display("is solved? %b",solved);
-#10;
-$display("is solved? %b",solved);
-#10;
+
+        $display("is solved? %b",solved);
+        #10;
+        $display("is solved? %b",solved);
+        #10;
+        $display("is solved? %b",solved);
+        #10;
+        $display("is solved? %b",solved);
+        #10;
 
 
 
