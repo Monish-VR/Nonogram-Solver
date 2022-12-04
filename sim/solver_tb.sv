@@ -259,181 +259,181 @@ module solver_tb;
 /* Board:
     001
     010
-    000
-*/
-        $display("just started");
-        started = 1;
+//     000
+// */
+//         $display("just started");
+//         started = 1;
+//         option = 0 ; //first line index 
+//         valid_in = 1;
+//         old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
+//         old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+//         old_options_amnt[2] = 1;
+//         old_options_amnt[3] = 1;
+//         old_options_amnt[4] = 3;
+//         old_options_amnt[5] = 3;
         
-        valid_in = 1;
-        old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[2] = 1;
-        old_options_amnt[3] = 1;
-        old_options_amnt[4] = 3;
-        old_options_amnt[5] = 3;
-        option = 0 ; //first line index 
-        #10;
-        started = 0;
-        option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //row 1 opt 2 - put back into FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 1 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001 ; //row 2 line index
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b100 ; //row 2 opt 1 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //row 2 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 2 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         #10;
+//         started = 0;
+//         option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //row 1 opt 2 - put back into FIFO
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //row 1 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001 ; //row 2 line index
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b100 ; //row 2 opt 1 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //row 2 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //row 2 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
-        //row 3:
-        option = 3'b010  ; //row 3-lined ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b000  ; //row 3-opt 1
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        //col 1
-        option = 3'b011  ; //col 1 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b000  ; //col 1 oppt 1 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         //row 3:
+//         option = 3'b010  ; //row 3-lined ind 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b000  ; //row 3-opt 1
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         //col 1
+//         option = 3'b011  ; //col 1 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b000  ; //col 1 oppt 1 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
-        option = 3'b100  ; //col 2
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b100 ; //col 2 opt 1 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //col 2 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //col 2 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         option = 3'b100  ; //col 2
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b100 ; //col 2 opt 1 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //col 2 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //col 2 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
 
-        option = 3'b101  ; //col 3
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b100 ; //col 3 opt 1 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //col 3 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //col 3 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         option = 3'b101  ; //col 3
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b100 ; //col 3 opt 1 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //col 3 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //col 3 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
-        //SECOND:
-        option = 0 ; //first line index 
-        #10;
-        started = 0;
-        option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //row 1 opt 2 - put back into FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 1 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001 ; //row 2 line index
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b100 ; //row 2 opt 1 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //row 2 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 2 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         //SECOND:
+//         option = 0 ; //first line index 
+//         #10;
+//         started = 0;
+//         option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //row 1 opt 2 - put back into FIFO
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //row 1 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001 ; //row 2 line index
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b100 ; //row 2 opt 1 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b010  ; //row 2 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //row 2 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
-        //row 3:
-        option = 3'b010  ; //row 3-lined ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         //row 3:
+//         option = 3'b010  ; //row 3-lined ind 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
-        //col 1
-        option = 3'b011  ; //col 1 
-        valid_in = 1;
-        `status(option,known,assigned);
+//         //col 1
+//         option = 3'b011  ; //col 1 
+//         valid_in = 1;
+//         `status(option,known,assigned);
 
 
-        option = 3'b100  ; //col 2
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        // option = 3'b100 ; //col 2 opt 1 -
-        // valid_in = 1;
-        // `status(option,known,assigned);
-        // #10;
-        option = 3'b010  ; //col 2 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //col 2 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b101  ; //col 3
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        // option = 3'b100 ; //col 3 opt 1 -
-        // valid_in = 1;
-        // `status(option,known,assigned);
-        // #10;
-        option = 3'b010  ; //col 3 opt 2 -
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //col 3 opt 3 - 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+//         option = 3'b100  ; //col 2
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         // option = 3'b100 ; //col 2 opt 1 -
+//         // valid_in = 1;
+//         // `status(option,known,assigned);
+//         // #10;
+//         option = 3'b010  ; //col 2 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //col 2 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b101  ; //col 3
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         // option = 3'b100 ; //col 3 opt 1 -
+//         // valid_in = 1;
+//         // `status(option,known,assigned);
+//         // #10;
+//         option = 3'b010  ; //col 3 opt 2 -
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
+//         option = 3'b001  ; //col 3 opt 3 - 
+//         valid_in = 1;
+//         `status(option,known,assigned);
+//         #10;
 
 
 
