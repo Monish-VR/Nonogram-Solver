@@ -73,6 +73,9 @@ module solver_tb;
         //col 2: 110 011
         //col 3: 100 010 001
 
+
+
+
         $display("just started");
         started = 1;
         option = 0 ; //first line index 
@@ -177,6 +180,83 @@ module solver_tb;
         //correct since we havent filled it, but all the spots of 1 should be correct
 
 
+        //round 2:
+        // row 1 : 110 011
+        //row 2: 100 010 001
+        //row 3:
+        //col 1:
+        //col 2: 110
+        //col 3 :001
+
+        option = 3'b000  ; //R1
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+
+        option = 3'b110 ; //row 1 opt 1
+        valid_in = 1;
+        #10;
+        `status(option,known,assigned);
+
+        // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
+        option = 3'b011 ; //row 1 opt 2
+        valid_in = 1;
+        #10;
+        `status(option, known,assigned);
+
+        option = 3'b001 ; //row 2 line index
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b100 ; //row 2 opt 1
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b010  ; //row 2 opt 2
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b001  ; //row 2 opt 3
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+
+        option = 3'b010 ; //row 3 line index
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b011 ; //col 1 line index
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b100 ; //col 2 line index
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b110 ; //col 2 opt 1
+        valid_in = 1;
+        #10;
+        `status(option,known,assigned);
+        option = 3'b101 ; //col 3 line index
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+        option = 3'b001 ; //col 3 opt 1 //
+        valid_in = 1;
+        `status(option,known,assigned);
+        #10;
+$display("is solved? %b",solved);
+#10;
+$display("is solved? %b",solved);
+#10;
+$display("is solved? %b",solved);
+#10;
+$display("is solved? %b",solved);
+#10;
+
+
+
+        $display("is solved? %b",solved);
         //ask about how to print out all the assignments
         // $display("the amount of options left sohuld be 0 but is %b", options_amnt);
         // $display("valid out sohuld be 1 but is %b", valid_out);
