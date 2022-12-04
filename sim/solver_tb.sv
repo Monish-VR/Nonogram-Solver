@@ -66,10 +66,10 @@ module solver_tb;
         // 0 1 0
         // 1 0 1
 
-        //row 1 : 110 011
+        //row 1: 110 011
         //row 2: 100 010 001
         //row 3: 101
-        //col 1:  101
+        //col 1: 101
         //col 2: 110 011
         //col 3: 100 010 001
 
@@ -127,7 +127,7 @@ module solver_tb;
         $display("should assign whole third row to be known");
         `status(option,known,assigned);
         #10;
-    // SHOULD assign whole third row to be known
+        // SHOULD assign whole third row to be known
 
         option = 3'b011  ; //col 1 line ind 
         valid_in = 1;
@@ -180,12 +180,12 @@ module solver_tb;
         //correct since we havent filled it, but all the spots of 1 should be correct
 
         //round 2:
-        // row 1 : 110 011
+        //row 1: 110 011
         //row 2: 100 010 001
         //row 3:
         //col 1:
-        //col 2: 110
-        //col 3 :001
+        //col 2: 011
+        //col 3: 100
 
         option = 3'b000  ; //R1
         valid_in = 1;
@@ -234,7 +234,7 @@ module solver_tb;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b110 ; //col 2 opt 1 - last option; remove from FIFO
+        option = 3'b011 ; //col 2 opt 1 - last option; remove from FIFO
         valid_in = 1;
         #10;
         `status(option,known,assigned);
@@ -243,10 +243,11 @@ module solver_tb;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001 ; //col 3 opt 1 - last option; remove from FIFO; [0][2] and [1][2] should be known (known complete => solved)
+        option = 3'b100 ; //col 3 opt 1 - last option; remove from FIFO; [0][2] and [1][2] should be known (known complete => solved)
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+        valid_in = 0;
 
         $display("is solved? %b",solved);
         #10;
