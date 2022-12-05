@@ -176,6 +176,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                 end
             endcase
+            
             /*if (started)begin
                 options_amnt <= old_options_amnt;
                 options_left <= old_options_amnt[option];

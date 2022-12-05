@@ -172,7 +172,7 @@ module solver_tb_2;
         `status(option,known,assigned);
         #10;
 
-        //SECOND:
+        //SECOND ROUND:
 
         //row 1: 100 010 001
         //row 2: 100 010 001
@@ -254,12 +254,13 @@ module solver_tb_2;
 
         //THIRD:
 
-        //row 1: 100 010 
-        //row 2: 100 010
+        //row 1:  010 001
+        //row 2:  010 001
         //row 3: 
         //col 1: 
         //col 2: 010 001
         //col 3: 010 001
+
 
         //NO SOLUTION - ambiguous
 

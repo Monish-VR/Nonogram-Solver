@@ -39,6 +39,7 @@ module top_level (
 
     assign rst = btnc;
     assign led = display_value;
+    //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
     assign next_line = read_first_line || solve_next;
@@ -59,7 +60,7 @@ module top_level (
         .valid_in(receive_done),
 
         .board_done(parsed), //board is done 
-        .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
+        .write_ready(parse_write), //Indication that we need to write to fifo,here in top level , we done with one line to the BRAM, ready to get new one
         .first_read(read_first_line),
         .line(parse_line),
         .options_per_line(options_per_line),
@@ -71,7 +72,7 @@ module top_level (
         .clk(clk_100mhz),               // input wire clk
         .rst(rst),                      // input wire rst
         .din(fifo_in),                  // input wire [15 : 0] din
-        .wr_en(fifo_write),              // input wire wr_en
+        .wr_en(fifo_write),              // value depends on the state. input wire wr_en
         .rd_en(next_line),              // input wire rd_en
         .dout(fifo_out),                // output wire [15 : 0] dout
         .full(fifo_full),               // output wire full

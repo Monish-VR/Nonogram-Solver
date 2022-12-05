@@ -18,8 +18,9 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
 
     /*
         Parser:
-
-        TODO
+            gets an input of 8 bits in every clock cycle and parse it out to get output of 16 bits which 
+            will be taken into the fifo. (every 2 clock cycles)
+             parser will also keep track of the board size and # of options per line
     */
 
     // message flags
