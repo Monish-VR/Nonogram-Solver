@@ -26,8 +26,8 @@ module top_level (
     logic rst;
     logic [COUNTER_WIDTH - 1: 0] counter;
     logic [7:0] transmit_data, received_data, display_value;
-    logic receive_done, transmit_valid, transmit_done, next_line;
-    logic fifo_write, parse_write, solve_write;
+    logic receive_done, transmit_valid, transmit_done, next_line, read_first_line;
+    logic fifo_write, parse_write, solve_write, solve_next;
     logic [1:0] state;
     logic [15:0] fifo_in, fifo_out, parse_line, solve_line;
     logic fifo_empty, fifo_full;
@@ -41,6 +41,7 @@ module top_level (
     assign led = display_value;
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
+    assign next_line = read_first_line || solve_next;
 
     uart_rx receiver (
         .clk(clk_100mhz),
@@ -59,6 +60,7 @@ module top_level (
 
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
+        .first_read(read_first_line),
         .line(parse_line),
         .options_per_line(options_per_line),
         .n(n),
@@ -89,7 +91,7 @@ module top_level (
         .num_cols(n),
         .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
-        .next_option(next_line)
+        .new_line(solve_next),
         .new_option(solve_line),
         .assigned(solution),  
         .put_back_to_FIFO(solve_write),  //boolean- do we need to push to fifo
@@ -126,7 +128,6 @@ module top_level (
         if (rst) begin
             display_value <= 0;
             counter <= 0;
-            next_line <= 0;
             state <= 0;
         end else begin
             case(state)

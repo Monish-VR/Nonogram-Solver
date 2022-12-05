@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-module parser(
+module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTIONS=84)(
         input wire clk,
         input wire rst,
         input wire [7:0] byte_in,
@@ -9,12 +9,11 @@ module parser(
         
         output logic board_done,  //signals parser is done
         output logic write_ready, //signals when output to be written to BRAM is done
+        output logic first_read,
         output logic [15:0] line, // line = line index (5 bits) + #options + options
-
-        //********** HARDCODED FOR NOW - DO MATH LATER ************//
-        // assuming 11x11 max board
-        output logic [4:0] [6:0] options_per_line,
-        output logic [3:0] n, m
+        output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
+        output logic [$clog2(MAX_ROWS) - 1:0] m,
+        output logic [$clog2(MAX_COLS) - 1:0] n
     );
 
     /*
@@ -36,6 +35,7 @@ module parser(
     logic row;
     logic [7:0] buffer;
     logic [2:0] flag;
+    logic fifo_started;
 
     /////******Hard-coded for now*****//////
     logic [4:0] line_index; //line index is MAX 11 
@@ -58,7 +58,9 @@ module parser(
             count <= 0;
             line_index <= 0;
             curr_option <= 0;
+            fifo_started <= 0;
         end else begin
+            if (fifo_started) first_read <= 0;
             if (valid_in)begin
                 if (!count) buffer <= byte_in;
                 else begin
@@ -76,6 +78,7 @@ module parser(
                         END_BOARD: begin
                             board_done <= 1;
                             write_ready <= 0;
+                            fifo_started <= 0;
                         end
                         START_LINE: begin
                             write_ready <= 1;
@@ -89,6 +92,10 @@ module parser(
                             line <= curr_option;
                             curr_option <= 16'b0;
                             options_per_line[line_index] <= options_per_line[line_index] + 1'b1;
+                            if (~fifo_started)begin
+                                fifo_started <= 1;
+                                first_read <= 1;
+                            end
                         end
                         AND: begin
                             write_ready <= 0;

@@ -1,20 +1,18 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-module assembler(
+module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
         input wire clk,
         input wire rst,
         input wire valid_in,
         input wire transmit_busy,
-        input wire [10:0] [10:0] solution,
+        input wire [(MAX_ROWS * MAX_COLS) - 1:0] solution,
+        input wire [$clog2(MAX_ROWS) - 1:0] m,
+        input wire [$clog2(MAX_COLS) - 1:0] n,
 
         output logic transmit_ready,
         output logic [7:0] byte_out,
-        output logic done,
-
-        //********** HARDCODED FOR NOW - DO MATH LATER ************//
-        // assuming 11x11 max board
-        input wire [3:0] n, m
+        output logic done
     );
 
     /*
@@ -22,7 +20,6 @@ module assembler(
 
         Convert solution to PC readable format.
     */
-
     // states
     localparam IDLE = 0;
     localparam START = 1;
@@ -48,8 +45,10 @@ module assembler(
     logic [2:0] state;
 
     /////******Hard-coded for now*****//////
-    logic [3:0] row_index, col_index;
-    logic [10:0] row;
+    logic [$clog2(MAX_ROWS) - 1:0] row_index;
+    logic [$clog2(MAX_COLS) - 1:0] col_index;
+    logic [$clog2(MAX_ROWS * (MAX_COLS-1)) - 1:0] real_index;
+    logic [MAX_COLS - 1:0] row;
 
     assign buffer = {flag, assignment_index, assignment_value};
     assign byte_out = (count)? buffer[7:0] : buffer[15:8];
@@ -82,6 +81,9 @@ module assembler(
                                 transmit_ready <= 1;
                                 state <= START;
                                 done <= 0;
+                                row_index <= 0;
+                                real_index <= 0;
+                                col_index <= 0;
                             end
                         end
                         START: begin
@@ -97,7 +99,7 @@ module assembler(
                             count <= 1;
                             transmit_ready <= 1;
                             state <= ASSIGN;
-                            row <= solution[row_index];
+                            row <= solution[real_index +: MAX_COLS];
                             col_index <= 0;
                         end
                         ASSIGN: begin
@@ -116,6 +118,7 @@ module assembler(
                             transmit_ready <= 1;
                             if (row_index + 1 < m)begin
                                 row_index <= row_index + 1;
+                                real_index <= real_index + MAX_COLS;
                                 state <= NEW_LINE;
                             end else state <= STOP;
                         end

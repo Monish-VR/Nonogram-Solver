@@ -143,14 +143,14 @@ def make_DNF(rows, cols):
         location is 0...mXn
     """
     DNF_rows = reduce(generate(rows, cols, False),True,len(cols))
-    print(DNF_rows)
+    #print(DNF_rows)
     DNF_cols = reduce(generate(cols, rows, True),False,len(cols))
-    print(DNF_cols)
+    #print(DNF_cols)
     formula = make_serial(len(rows), len(cols),DNF_rows + DNF_cols)
     i=0
-    while i < len(formula):
+    """while i < len(formula):
         print(formula[i:i+16])
-        i = i + 16
+        i = i + 16 """
     return formula
 
 r = [[2],[1]]

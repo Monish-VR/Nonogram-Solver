@@ -92,14 +92,19 @@ def rx(ser):
     return
 
 def tx(ser, index):
-    c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
-    print(type(c))
-    for i in range(0,len(c),16):
-        print(c[i:i+16])
-        bitstring_to_bytes(c[i:i+16])
-        i = i + 16
-        time.sleep(.75)
-    return
+    r = [[2],[1],[1,1]]
+    c = [[1,1],[2],[1]]
+    board = DNF_board.make_DNF(r,c)
+    #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
+    try:
+        print("Writing...")
+        for i in range(0,len(board),16):
+           ser.write(bitstring_to_bytes(board[i:i+16]))
+           time.sleep(.25)
+        return
+    except Exception as e:
+        print(e)
+        ser.close()
 
 def main():
     print("hello")
@@ -156,12 +161,13 @@ def test_rx(input):
             count = not count
 
 if __name__ == "__main__":
-    #main() 
+    main() 
     
     """ byt = bitstring_to_bytes("1000000000101100")
     print(type(byt))
     string = bytes_to_bitstring(byt) """
-    r = [[2],[1]]
+    """ r = [[2],[1]]
     c = [[1],[2]]
     d = DNF_board.make_DNF(r,c)
-    test_rx(d)
+    test_rx(d) """
+    #tx(0,0)
