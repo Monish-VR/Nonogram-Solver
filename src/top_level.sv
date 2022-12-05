@@ -32,8 +32,8 @@ module top_level (
     logic [15:0] fifo_in, fifo_out, parse_line, solve_line;
     logic fifo_empty, fifo_full;
     logic parsed, solved, assembled;
-    logic [$clog2(MAX_ROWS) - 1:0] m;
-    logic [$clog2(MAX_COLS) - 1:0] n;
+    logic [2:0] [$clog2(MAX_ROWS) - 1:0] m;
+    logic [2:0] [$clog2(MAX_COLS) - 1:0] n;
     logic [1:0] [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic clk_50mhz;
@@ -45,13 +45,13 @@ module top_level (
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
     assign next_line = read_first_line || solve_next;
 
-    clk_wiz_50 divider (
+    /* clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
         .clk_out1(clk_50mhz)
-    );
+    ); */
 
     uart_rx receiver (
-        .clk(clk_50mhz),
+        .clk(clk_100mhz),
         .rst(rst),
         .axiid(rx),
 
@@ -60,7 +60,7 @@ module top_level (
     );
 
     parser parse (
-        .clk(clk_50mhz),
+        .clk(clk_100mhz),
         .rst(rst),
         .byte_in(received_data),
         .valid_in(receive_done),
@@ -70,12 +70,12 @@ module top_level (
         .first_read(read_first_line),
         .line(parse_line),
         .options_per_line(options_per_line[0]),
-        .n(n),
-        .m(m)
+        .n(n[0]),
+        .m(m[0])
     );
 
     fifo_11_by_11 fifo (
-        .clk(clk_50mhz),               // input wire clk
+        .clk(clk_100mhz),               // input wire clk
         .srst(rst),                      // input wire rst
         .din(fifo_in),                  // input wire [15 : 0] din
         .wr_en(fifo_write),              // input wire wr_en
@@ -88,12 +88,12 @@ module top_level (
     //solver Module
     solver sol (
         //TODO: confirm sizes for everything
-        .clk(clk_50mhz),
+        .clk(clk_100mhz),
         .rst(rst),
         .started(parsed), //indicates board has been parsed, ready to solve
         .option(fifo_out),
-        .num_rows(m),
-        .num_cols(n),
+        .num_rows(m[1]),
+        .num_cols(n[1]),
         .old_options_amnt(options_per_line[1]),  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
         .new_line(solve_next),
@@ -104,13 +104,13 @@ module top_level (
     );
 
     assembler assemble (
-        .clk(clk_50mhz),
+        .clk(clk_100mhz),
         .rst(rst),
         .valid_in(solved),
         .transmit_busy(~transmit_done),
         .solution(solution[1]),
-        .n(n),  //11x11
-        .m(m),  //11x11
+        .n(n[2]),  //11x11
+        .m(m[2]),  //11x11
 
         .transmit_ready(transmit_valid),
         .byte_out(transmit_data),
@@ -118,7 +118,7 @@ module top_level (
     );
 
     uart_tx transmitter (
-        .clk(clk_50mhz),
+        .clk(clk_100mhz),
         .rst(rst),
         .axiiv(transmit_valid),
         .axiid(transmit_data),
@@ -127,7 +127,7 @@ module top_level (
         .done(transmit_done)
     );
 
-    always_ff @(posedge clk_50mhz)begin
+    always_ff @(posedge clk_100mhz)begin
         if (rst) begin
             display_value <= 0;
             counter <= 0;
@@ -135,6 +135,10 @@ module top_level (
         end else begin
             options_per_line[1] <= options_per_line[0];
             solution[1] <= solution[0];
+            n[1] <= n[0];
+            n[2] <= n[1];
+            m[1] <= m[0];
+            m[2] <= m[1];
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
                 SOLVE: state <= (solved)? TRANSMIT : SOLVE;
