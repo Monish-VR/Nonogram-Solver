@@ -6,7 +6,7 @@
 
 set partNum xc7a100tcsg324-1
 set outputDir obj
-set verbose 0
+set verbose 1
 
 if { $argc > 0 } {
 	if { $argc == 1 && [string compare [ lindex $argv 0 ] "-d"] == 0 } {
@@ -23,11 +23,12 @@ exec sh -c "\[ -d $outputDir \] || mkdir $outputDir"
 exec sh -c "rm -rf $outputDir/*"
 
 read_verilog -sv [ glob ./src/*.{sv,v,svh,vh} ]
+#read_verilog  [ glob ./src/*.v ]
 read_xdc ./xdc/top_level.xdc
 
 set_part $partNum
 
-read_ip ./IP/fifo_11_by_11/fifo_11_by_11.xci
+read_ip IP/fifo_11_by_11/fifo_11_by_11.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 

@@ -34,8 +34,9 @@ module top_level (
     logic parsed, solved, assembled;
     logic [$clog2(MAX_ROWS) - 1:0] m;
     logic [$clog2(MAX_COLS) - 1:0] n;
-    logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
-    logic [(MAX_ROWS * MAX_COLS) - 1:0] solution;
+    logic [1:0] [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
+    logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
+    logic clk_50mhz;
 
     assign rst = btnc;
     assign led = display_value;
@@ -44,8 +45,13 @@ module top_level (
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
     assign next_line = read_first_line || solve_next;
 
+    clk_wiz_50 divider (
+        .clk_in1(clk_100mhz),
+        .clk_out1(clk_50mhz)
+    );
+
     uart_rx receiver (
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .axiid(rx),
 
@@ -54,58 +60,55 @@ module top_level (
     );
 
     parser parse (
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .byte_in(received_data),
         .valid_in(receive_done),
 
         .board_done(parsed), //board is done 
-        .write_ready(parse_write), //Indication that we need to write to fifo,here in top level , we done with one line to the BRAM, ready to get new one
+        .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .first_read(read_first_line),
         .line(parse_line),
-        .options_per_line(options_per_line),
+        .options_per_line(options_per_line[0]),
         .n(n),
         .m(m)
     );
 
     fifo_11_by_11 fifo (
-        .clk(clk_100mhz),               // input wire clk
-        .rst(rst),                      // input wire rst
+        .clk(clk_50mhz),               // input wire clk
+        .srst(rst),                      // input wire rst
         .din(fifo_in),                  // input wire [15 : 0] din
-        .wr_en(fifo_write),              // value depends on the state. input wire wr_en
+        .wr_en(fifo_write),              // input wire wr_en
         .rd_en(next_line),              // input wire rd_en
         .dout(fifo_out),                // output wire [15 : 0] dout
         .full(fifo_full),               // output wire full
-        .empty(fifo_empty),             // output wire empty
-        .wr_rst_busy(),                 // output wire wr_rst_busy DON'T NEED?
-        .rd_rst_busy()                  // output wire rd_rst_busy DON'T NEED?
+        .empty(fifo_empty)             // output wire empty
     );
 
     //solver Module
     solver sol (
         //TODO: confirm sizes for everything
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .started(parsed), //indicates board has been parsed, ready to solve
         .option(fifo_out),
         .num_rows(m),
         .num_cols(n),
-        .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
+        .old_options_amnt(options_per_line[1]),  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
         .new_line(solve_next),
         .new_option(solve_line),
-        .assigned(solution),  
+        .assigned(solution[0]),  
         .put_back_to_FIFO(solve_write),  //boolean- do we need to push to fifo
         .solved(solved) // board is 
     );
 
-
     assembler assemble (
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .valid_in(solved),
         .transmit_busy(~transmit_done),
-        .solution(solution),
+        .solution(solution[1]),
         .n(n),  //11x11
         .m(m),  //11x11
 
@@ -115,7 +118,7 @@ module top_level (
     );
 
     uart_tx transmitter (
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .axiiv(transmit_valid),
         .axiid(transmit_data),
@@ -124,13 +127,14 @@ module top_level (
         .done(transmit_done)
     );
 
-
-    always_ff @(posedge clk_100mhz)begin
+    always_ff @(posedge clk_50mhz)begin
         if (rst) begin
             display_value <= 0;
             counter <= 0;
             state <= 0;
         end else begin
+            options_per_line[1] <= options_per_line[0];
+            solution[1] <= solution[0];
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
                 SOLVE: state <= (solved)? TRANSMIT : SOLVE;
