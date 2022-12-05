@@ -32,7 +32,7 @@ module solver_tb_4x4;
     logic [3:0] [3:0] known;
 
 
-    solver #(.MAX_ROWS(4), .MAX_COLS(4)) uut (
+    solver uut (
         .clk(clk),
         .rst(rst),
         .started(started),
