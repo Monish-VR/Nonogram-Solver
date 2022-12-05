@@ -3,12 +3,12 @@
 
 `define status(OPT, KNOWNS, SOL) \
 $display("option: %b \n", OPT); \
-$display("knows: \n %b  %b  %b \n", KNOWNS[0][0], KNOWNS[0][1], KNOWNS[0][2]); \
-$display(" %b  %b  %b \n", KNOWNS[1][0], KNOWNS[1][1], KNOWNS[1][2]); \
-$display(" %b  %b  %b \n", KNOWNS[2][0], KNOWNS[2][1], KNOWNS[2][2]); \
-$display("sol: \n %b  %b  %b \n", SOL[0][0], SOL[0][1], SOL[0][2]); \
-$display(" %b  %b  %b \n", SOL[1][0], SOL[1][1], SOL[1][2]); \
-$display(" %b  %b  %b \n", SOL[2][0], SOL[2][1], SOL[2][2]); 
+$display("knows: \n %b  %b  %b \n", KNOWNS[0], KNOWNS[1], KNOWNS[2]); \
+$display(" %b  %b  %b \n", KNOWNS[11], KNOWNS[12], KNOWNS[13]); \
+$display(" %b  %b  %b \n", KNOWNS[22], KNOWNS[23], KNOWNS[24]); \
+$display("sol: \n %b  %b  %b \n", SOL[0], SOL[1], SOL[2]); \
+$display(" %b  %b  %b \n", SOL[11], SOL[12], SOL[13]); \
+$display(" %b  %b  %b \n", SOL[22], SOL[23], SOL[24]); 
 // $display(" %b  %b  %b \n", KNOWNS);
 
 // $display("\n");
@@ -22,22 +22,21 @@ module solver_tb_2;
     logic started;
     logic [2:0] option;
     logic valid_in;
-    logic [5:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
-    logic [2:0] [2:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
+    logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
+    logic [120:0] assigned,known; //[SIZE-1:0]  [SIZE-1:0]
     logic put_back_to_FIFO;  //boolean- do we need to push to fifo
-    logic solved;
-    logic [2:0] [2:0] known;
-
+    logic solved,next;
 
     solver uut (
         .clk(clk),
         .rst(rst),
         .started(started),
         .option(option),
-        .num_rows(4'd3),
-        .num_cols(4'd3),
-        .valid_op(valid_in),
+        .num_rows(2'd3),
+        .num_cols(2'd3),
         .old_options_amnt(old_options_amnt),
+
+        .new_line(next),
         .put_back_to_FIFO(put_back_to_FIFO),  
         .assigned(assigned),
         .known(known),
@@ -49,7 +48,7 @@ module solver_tb_2;
         clk = !clk;
     end
     initial begin
-        $dumpfile("solver2.vcd");
+        $dumpfile("solver_2.vcd");
         $dumpvars(0, solver_tb_2);
         $display("Starting Sim Solver");
         clk = 0;
@@ -61,25 +60,18 @@ module solver_tb_2;
         rst = 0;
         #10;
 
-        //BOARD :
-        // 1 1 0
-        // 0 1 0
-        // 1 0 1
+        /* Board:
+            001
+            010
+            000
+        */
 
-        //row 1: 110 011
+        //row 1: 100 010 001
         //row 2: 100 010 001
-        //row 3: 101
-        //col 1: 101
-        //col 2: 110 011
+        //row 3: 000
+        //col 1: 000
+        //col 2: 100 010 001
         //col 3: 100 010 001
-
-
-/* Board:
-    001
-    010
-    000
-*/
-
 
         $display("just started");
         started = 1;
@@ -98,9 +90,6 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-
-
-        #10;
         option = 3'b010  ; //row 1 opt 2 - put back into FIFO
         valid_in = 1;
         `status(option,known,assigned);
@@ -109,6 +98,7 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+
         option = 3'b001 ; //row 2 line index
         valid_in = 1;
         `status(option,known,assigned);
@@ -136,6 +126,7 @@ module solver_tb_2;
         $display("row 3 should be known");
         `status(option,known,assigned);
         #10;
+
         //col 1
         option = 3'b011  ; //col 1 
         valid_in = 1;
@@ -150,7 +141,7 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //col 2 opt 1 -
+        option = 3'b100 ; //col 2 opt 1 - conflict; kick out of FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -158,7 +149,7 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //col 2 opt 3 - 
+        option = 3'b001  ; //col 2 opt 3 -
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -168,7 +159,7 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //col 3 opt 1 -
+        option = 3'b100 ; //col 3 opt 1 - conflict; kick out of FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -176,24 +167,32 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //col 3 opt 3 - 
+        option = 3'b001  ; //col 3 opt 3 -
         valid_in = 1;
         `status(option,known,assigned);
         #10;
 
         //SECOND:
+
+        //row 1: 100 010 001
+        //row 2: 100 010 001
+        //row 3: 
+        //col 1: 
+        //col 2: 010 001
+        //col 3: 010 001
+
         option = 0 ; //first line index 
         #10;
         started = 0;
-        option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
+        option = 3'b100 ; //row 1 opt 1 - 
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b010  ; //row 1 opt 2 - put back into FIFO
+        option = 3'b010  ; //row 1 opt 2 -
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //row 1 opt 3 - 
+        option = 3'b001  ; //row 1 opt 3 - conflict; kick out of FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -209,7 +208,7 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //row 2 opt 3 - 
+        option = 3'b001  ; //row 2 opt 3 - conflict; kick out of FIFO
         valid_in = 1;
         `status(option,known,assigned);
         #10;
@@ -231,10 +230,6 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        // option = 3'b100 ; //col 2 opt 1 -
-        // valid_in = 1;
-        // `status(option,known,assigned);
-        // #10;
         option = 3'b010  ; //col 2 opt 2 -
         valid_in = 1;
         `status(option,known,assigned);
@@ -243,14 +238,11 @@ module solver_tb_2;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+
         option = 3'b101  ; //col 3
         valid_in = 1;
         `status(option,known,assigned);
         #10;
-        // option = 3'b100 ; //col 3 opt 1 -
-        // valid_in = 1;
-        // `status(option,known,assigned);
-        // #10;
         option = 3'b010  ; //col 3 opt 2 -
         valid_in = 1;
         `status(option,known,assigned);
@@ -260,6 +252,16 @@ module solver_tb_2;
         `status(option,known,assigned);
         #10;
 
+        //THIRD:
+
+        //row 1: 100 010 
+        //row 2: 100 010
+        //row 3: 
+        //col 1: 
+        //col 2: 010 001
+        //col 3: 010 001
+
+        //NO SOLUTION - ambiguous
 
 
         $display("is solved? %b",solved);
