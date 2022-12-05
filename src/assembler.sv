@@ -10,6 +10,7 @@ module assembler(
 
         output logic transmit_ready,
         output logic [7:0] byte_out,
+        output logic done,
 
         //********** HARDCODED FOR NOW - DO MATH LATER ************//
         // assuming 11x11 max board
@@ -56,19 +57,19 @@ module assembler(
     always_ff @(posedge clk)begin
         if (rst)begin
             transmit_ready <= 0;
-            byte_out <= 0;
-            buffer <= 0;
             count <= 0;
             state <= IDLE;
             row_index <= 0;
             col_index <= 0;
             row <= 0;
+            done <= 1;
         end else begin
             if (transmit_busy) transmit_ready <= 0;
             else begin
                 if (count)begin //second half of message
                     count <= 0;
                     transmit_ready <= 1;
+                    if(state == IDLE) done <= 1;
                 end
                 else begin
                     case(state)
@@ -80,6 +81,7 @@ module assembler(
                                 count <= 1;
                                 transmit_ready <= 1;
                                 state <= START;
+                                done <= 0;
                             end
                         end
                         START: begin

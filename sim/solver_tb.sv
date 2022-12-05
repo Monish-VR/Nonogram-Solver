@@ -22,6 +22,7 @@ module solver_tb;
     logic started;
     logic [2:0] option;
     logic valid_in;
+    logic next;
     logic [5:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
     logic [2:0] [2:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
     logic put_back_to_FIFO;  //boolean- do we need to push to fifo
@@ -29,15 +30,16 @@ module solver_tb;
     logic [2:0] [2:0] known;
 
 
-    solver uut (
+    solver #(.MAX_ROWS(3), .MAX_COLS(3)) uut (
         .clk(clk),
         .rst(rst),
         .started(started),
         .option(option),
-        .num_rows(4'd3),
-        .num_cols(4'd3),
-        .valid_op(valid_in),
+        .num_rows(2'd3),
+        .num_cols(2'd3),
         .old_options_amnt(old_options_amnt),
+
+        .new_line(next),
         .put_back_to_FIFO(put_back_to_FIFO),  
         .assigned(assigned),
         .known(known),
