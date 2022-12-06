@@ -80,6 +80,9 @@ module solver_tb;
 
         $display("just started");
         started = 1;
+        #10;
+        started = 0;
+
         option = 0 ; //first line index 
         valid_in = 1;
         old_options_amnt[0] = 2; //logic [2*SIZE:0] [6:0]
@@ -90,7 +93,6 @@ module solver_tb;
         old_options_amnt[5] = 3;
         #10;
         `status(option,known,assigned);
-        started = 0;
         option = 3'b110 ; //row 1 opt 1
         valid_in = 1;
         #10;
@@ -99,9 +101,9 @@ module solver_tb;
         option = 3'b011 ; //row 1 opt 2
         valid_in = 1;
         $display("should assign cell [0] [1] to be known");
-        #10;
+        #20;
         `status(option, known,assigned);
-        // should assign cell [0] [1] to be known
+
         option = 3'b001 ; //row 2 line index
         valid_in = 1;
         `status(option,known,assigned);
@@ -116,8 +118,8 @@ module solver_tb;
         #10;
         option = 3'b001  ; //row 2 opt 3
         valid_in = 1;
+        #20;
         `status(option,known,assigned);
-        #10;
 
         option = 3'b010  ; //row 3 line ind (==2)
         valid_in = 1;
@@ -127,8 +129,8 @@ module solver_tb;
         option = 3'b101  ; //row 3 opt 1
         valid_in = 1;
         $display("should assign whole third row to be known");
+        #20;
         `status(option,known,assigned);
-        #10;
         // SHOULD assign whole third row to be known
 
         option = 3'b011  ; //col 1 line ind 
@@ -138,8 +140,8 @@ module solver_tb;
         option = 3'b101  ; //col 1 opt 1 
         valid_in = 1;
         $display("should assign cells [1][0] and [2][0] to be known");
+        #20;
         `status(option,known,assigned);
-        #10;
         // should assign cells [1][0] and [2][0] to be known
 
         option = 3'b100  ; //col 2 line ind 
@@ -153,8 +155,8 @@ module solver_tb;
         option = 3'b011 ; //col 2 2 opt
         valid_in = 1;
         $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
+        #20;
         `status(option,known,assigned);
-        #10;
 
         // $display("options for col 2 should be 1. opt for col 2: %b", options_amnt); DANA: need to return options if we wanna check that
         option = 3'b101  ; //col 3 line ind 
@@ -173,8 +175,8 @@ module solver_tb;
         #10;
         option = 3'b001  ; //col 3 opt 3
         valid_in = 1;
+        #20;
         `status(option,known,assigned);
-        #10;
 
 
         // $display("put this back in FIFO should be 0 but we got %b", put_back_to_FIFO);
@@ -258,186 +260,6 @@ module solver_tb;
         #10;
         rst = 0;
         #10;
-/* Board:
-    001
-    010
-//     000
-// */
-//         $display("just started");
-//         started = 1;
-//         option = 0 ; //first line index 
-//         valid_in = 1;
-//         old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
-//         old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
-//         old_options_amnt[2] = 1;
-//         old_options_amnt[3] = 1;
-//         old_options_amnt[4] = 3;
-//         old_options_amnt[5] = 3;
-        
-//         #10;
-//         started = 0;
-//         option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //row 1 opt 2 - put back into FIFO
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //row 1 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001 ; //row 2 line index
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b100 ; //row 2 opt 1 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //row 2 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //row 2 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-//         //row 3:
-//         option = 3'b010  ; //row 3-lined ind 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b000  ; //row 3-opt 1
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         //col 1
-//         option = 3'b011  ; //col 1 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b000  ; //col 1 oppt 1 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-//         option = 3'b100  ; //col 2
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b100 ; //col 2 opt 1 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //col 2 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //col 2 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-
-//         option = 3'b101  ; //col 3
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b100 ; //col 3 opt 1 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //col 3 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //col 3 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-//         //SECOND:
-//         option = 0 ; //first line index 
-//         #10;
-//         started = 0;
-//         option = 3'b100 ; //row 1 opt 1 - conflict; remove from FIFO
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //row 1 opt 2 - put back into FIFO
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //row 1 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001 ; //row 2 line index
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b100 ; //row 2 opt 1 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b010  ; //row 2 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //row 2 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-//         //row 3:
-//         option = 3'b010  ; //row 3-lined ind 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-//         //col 1
-//         option = 3'b011  ; //col 1 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-
-
-//         option = 3'b100  ; //col 2
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         // option = 3'b100 ; //col 2 opt 1 -
-//         // valid_in = 1;
-//         // `status(option,known,assigned);
-//         // #10;
-//         option = 3'b010  ; //col 2 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //col 2 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b101  ; //col 3
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         // option = 3'b100 ; //col 3 opt 1 -
-//         // valid_in = 1;
-//         // `status(option,known,assigned);
-//         // #10;
-//         option = 3'b010  ; //col 3 opt 2 -
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-//         option = 3'b001  ; //col 3 opt 3 - 
-//         valid_in = 1;
-//         `status(option,known,assigned);
-//         #10;
-
-
 
         $display("is solved? %b",solved);
         //ask about how to print out all the assignments
