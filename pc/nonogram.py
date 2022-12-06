@@ -26,9 +26,9 @@ def connect():
 
     return ser
 
-def bitstring_to_bytes(input_str):
+def bitstring_to_bytes(input_str,num):
     input_int = int(input_str, 2)
-    bit_byte = input_int.to_bytes(2,'big')
+    bit_byte = input_int.to_bytes(num,'big')
     #print(bit_byte.hex())
     return bit_byte
 
@@ -98,9 +98,19 @@ def tx(ser, index):
     #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:
         print("Writing...")
-        for i in range(0,len(board),16):
-           ser.write(bitstring_to_bytes(board[i:i+16]))
-           time.sleep(.25)
+        print(board)
+        for i in range(0,len(board),8):
+            print(board[i:i+8])
+            v = bitstring_to_bytes(board[i:i+8],1)
+            print(v)
+            #print([v[0],v[1]])
+            ser.write(v)
+            time.sleep(1)
+            """ ser.write(v[1])
+            #time.sleep(.5)
+            ser.write(v[0])
+            time.sleep(.1)
+            #time.sleep(.1) """
         return
     except Exception as e:
         print(e)

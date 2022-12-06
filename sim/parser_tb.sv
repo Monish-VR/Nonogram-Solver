@@ -94,9 +94,12 @@ module parser_tb;
             #10;
             valid_in = 0;
             #10;
+            $display("output should be (11): %b", line);
         end
 
+        $display("output should be (11): %b", line);
         #20;
+        $display("next");
 
         serial_bits = `LINE_2_3;
 
@@ -106,9 +109,12 @@ module parser_tb;
             #10;
             valid_in = 0;
             #10;
+            $display("output should be (01) and then (10): %b", line);
         end
 
+        $display("output should be (01) and then (10): %b", line);
         #20;
+        $display("next");
 
         serial_bits = `LINE_2_3;
 
@@ -118,9 +124,12 @@ module parser_tb;
             #10;
             valid_in = 0;
             #10;
+            $display("output should be (01) and then (10): %b", line);
         end
 
+        $display("output should be (01) and then (10): %b", line);
         #20;
+        $display("next");
 
         serial_bits = `LINE_1_4;
 
@@ -130,9 +139,12 @@ module parser_tb;
             #10;
             valid_in = 0;
             #10;
+            $display("output should be (11): %b", line);
         end
 
+        $display("output should be (11): %b", line);
         #20;
+        $display("next");
 
         serial_bits = `STOP;
 

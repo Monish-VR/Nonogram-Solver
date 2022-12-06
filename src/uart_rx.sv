@@ -25,7 +25,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
 
     localparam CLK_FRQ = 100_000_000; //100 MHz
     localparam CYCLES_PER_BIT = CLK_FRQ / BAUD;
-    localparam HALF_CYLE = CYCLES_PER_BIT >> 1;
+    localparam HALF_CYCLE = CYCLES_PER_BIT >> 1;
     localparam COUNTER_WIDTH = $clog2(CYCLES_PER_BIT);
 
     localparam START_BIT = 1'b0;
@@ -35,7 +35,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
     localparam START = 1;
     localparam RECEIVE = 2;
     localparam STOP = 3;
-    localparam DELAY = 4;
+    localparam CLEAN = 4;
 
     logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
@@ -57,35 +57,32 @@ module uart_rx #(parameter BAUD = 'd9600)(
                     end
                 end
                 START: begin
-                    if (count == HALF_CYLE && axiid != START_BIT) state <= IDLE;
-                    else if (count == CYCLES_PER_BIT)begin
-                        state <= RECEIVE;
-                        count <= 1;
-                        axiod <= 0;
+                    if (count == HALF_CYCLE) begin
+                        if (axiid != START_BIT) state <= IDLE;
+                        else begin
+                            state <= RECEIVE;
+                            count <= 1;
+                            axiod <= 0;
+                        end 
                     end else count <= count + 1;
                 end
                 RECEIVE: begin
                     if (count == CYCLES_PER_BIT)begin
+                        axiod[data_index] <= axiid;
                         if (data_index == 3'd7) state <= STOP;
                         else data_index <= data_index + 1;
                         count <= 1;
                     end else count <= count + 1;
-                    
-                    if (count == HALF_CYLE) axiod[data_index] <= axiid; // sample from middle
                 end
                 STOP: begin
-                    if (count == HALF_CYLE & axiid != STOP_BIT) state <= DELAY;
-                    else if (count == CYCLES_PER_BIT)begin
+                    if (count == CYCLES_PER_BIT)begin
                         axiov <= 1;
-                        state <= IDLE;
+                        state <= CLEAN;
                         count <= 1;
                     end else count <= count + 1;
                 end
-                DELAY: begin
-                   if (count == HALF_CYLE)begin
-                        state <= IDLE;
-                        count <= 1;
-                    end else count <= count + 1;
+                CLEAN: begin
+                    state <= IDLE;
                     axiov <= 0;
                 end
             endcase
