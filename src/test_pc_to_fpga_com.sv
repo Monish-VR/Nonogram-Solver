@@ -24,7 +24,7 @@ module pc_to_fpga (
     logic receive_done, valid_in, transmit_done;
     logic [1:0] state;
 
-    assign led = counter;
+    assign led = display_value;
 
     uart_rx receiver (
         .clk(clk_100mhz),
@@ -42,7 +42,7 @@ module pc_to_fpga (
             counter <= 0;
             state <= START;
         end else begin
-            if (receive_done) counter <= counter + 1;
+            if (receive_done) display_value <= received_data;
         end
     end
 

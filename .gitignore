@@ -10,6 +10,7 @@ vivado*
 *.vcd
 *.out
 *.swp
+*.bit
 
 #ignore all but .xci in IP folders
 /IP/*/*

@@ -57,10 +57,11 @@ def rx(ser):
     buffer = ""
     try:
         print("Reading...")
-        while not board_done:
+        while True:#not board_done:
             data = ser.read(1) #read the buffer (99/100 timeout will hit)
             if data != b'':  #if not nothing there.
-                if not count:
+                print(byte_to_bitstring(data))
+                """ if not count:
                     buffer = byte_to_bitstring(data)
                 else:
                     msg = buffer + byte_to_bitstring(data)
@@ -79,7 +80,7 @@ def rx(ser):
                         x = indx % n
                         y = indx // n
                         board[y][x] = msg[15]
-                count = not count
+                count = not count """
                         
 
 
@@ -102,15 +103,7 @@ def tx(ser, index):
         for i in range(0,len(board),8):
             print(board[i:i+8])
             v = bitstring_to_bytes(board[i:i+8],1)
-            print(v)
-            #print([v[0],v[1]])
             ser.write(v)
-            time.sleep(1)
-            """ ser.write(v[1])
-            #time.sleep(.5)
-            ser.write(v[0])
-            time.sleep(.1)
-            #time.sleep(.1) """
         return
     except Exception as e:
         print(e)
@@ -121,12 +114,14 @@ def main():
     connection = connect()
 
     index = 0
-    while True:
+    tx(connection, index)
+    rx(connection)
+    """ while True:
         tx(connection, index)
         print("board #{} sent, waiting until needed".format(index))
         rx(connection)
         print("time to send")
-        index += 1
+        index += 1 """
 
 def test_rx(input):
     board_done = False

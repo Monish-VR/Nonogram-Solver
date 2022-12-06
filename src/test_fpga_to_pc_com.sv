@@ -15,7 +15,7 @@ module fpga_to_pc (
     localparam TRANSMIT = 1;
     localparam WAIT = 2;
 
-    localparam CYCLES = 50_000_000;
+    localparam CYCLES = 1_000;
     localparam MAX_BYTE = 255;
     localparam COUNTER_WIDTH = $clog2(CYCLES);
 

@@ -6,7 +6,7 @@
 
 set partNum xc7a100tcsg324-1
 set outputDir obj
-set verbose 1
+set verbose 0
 
 if { $argc > 0 } {
 	if { $argc == 1 && [string compare [ lindex $argv 0 ] "-d"] == 0 } {
@@ -55,7 +55,7 @@ if { $verbose } {
 # route design and generate bitstream
 
 route_design -directive Explore
-write_bitstream -force $outputDir/final.bit
+write_bitstream -force $outputDir/fifo_to_transmit.bit
 
 if { $verbose } {
 	report_route_status -file $outputDir/post_route_status.rpt

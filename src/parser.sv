@@ -9,11 +9,11 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         
         output logic board_done,  //signals parser is done
         output logic write_ready, //signals when output to be written to BRAM is done
-        output logic first_read,
         output logic [15:0] line, // line = line index (5 bits) + #options + options
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
         output logic [$clog2(MAX_ROWS) - 1:0] m,
-        output logic [$clog2(MAX_COLS) - 1:0] n
+        output logic [$clog2(MAX_COLS) - 1:0] n,
+        output logic [2:0] flag
     );
 
     /*
@@ -35,7 +35,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
     logic first;
     logic row;
     logic [7:0] buffer;
-    logic [2:0] flag;
+    //logic [2:0] flag;
     logic fifo_started;
 
     /////******Hard-coded for now*****//////
@@ -61,7 +61,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
             curr_option <= 0;
             fifo_started <= 0;
         end else begin
-            if (fifo_started) first_read <= 0;
             if (valid_in)begin
                 if (!count) buffer <= byte_in;
                 else begin
@@ -79,7 +78,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                         END_BOARD: begin
                             board_done <= 1;
                             write_ready <= 0;
-                            fifo_started <= 0;
                         end
                         START_LINE: begin
                             write_ready <= 1;
@@ -95,7 +93,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             options_per_line[line_index] <= options_per_line[line_index] + 1'b1;
                             if (~fifo_started)begin
                                 fifo_started <= 1;
-                                first_read <= 1;
                             end
                         end
                         AND: begin

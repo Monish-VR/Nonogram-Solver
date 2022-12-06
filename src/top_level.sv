@@ -7,7 +7,9 @@ module top_level (
         input wire rx,
 
         output logic tx,
-        output logic [7:0] led
+        output logic [7:0] bits,
+        output logic [2:0] stat
+        
     );
     
     localparam MAX_ROWS = 11;  // HARDCODED for 11x11
@@ -21,10 +23,8 @@ module top_level (
 
     localparam CYCLES = 50_000_000;
     localparam MAX_BYTE = 255;
-    localparam COUNTER_WIDTH = $clog2(CYCLES);
 
     logic rst;
-    logic [COUNTER_WIDTH - 1: 0] counter;
     logic [7:0] transmit_data, received_data, display_value;
     logic receive_done, transmit_valid, transmit_done, next_line, read_first_line;
     logic fifo_write, parse_write, solve_write, solve_next;
@@ -37,13 +37,17 @@ module top_level (
     logic [1:0] [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic clk_50mhz;
+    logic parser_valid;
 
     assign rst = btnc;
-    assign led = display_value;
+    logic [2:0] flag;
+    assign stat = fifo_empty;//display_value;
+    assign bits = (state == RECEIVE)? fifo_in[7:0] : fifo_out[7:0];
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
-    assign next_line = read_first_line || solve_next;
+    assign next_line = solve_next;
+    assign parser_valid = receive_done && state == RECEIVE;
 
     /* clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
@@ -63,15 +67,15 @@ module top_level (
         .clk(clk_100mhz),
         .rst(rst),
         .byte_in(received_data),
-        .valid_in(receive_done),
+        .valid_in(parser_valid),
 
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
-        .first_read(read_first_line),
         .line(parse_line),
         .options_per_line(options_per_line[0]),
         .n(n[0]),
-        .m(m[0])
+        .m(m[0]),
+        .flag(flag)
     );
 
     fifo_11_by_11 fifo (
@@ -129,9 +133,8 @@ module top_level (
 
     always_ff @(posedge clk_100mhz)begin
         if (rst) begin
-            display_value <= 0;
-            counter <= 0;
-            state <= 0;
+            display_value <= '1;
+            state <= RECEIVE;
         end else begin
             options_per_line[1] <= options_per_line[0];
             solution[1] <= solution[0];
@@ -141,7 +144,7 @@ module top_level (
             m[2] <= m[1];
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
-                SOLVE: state <= (solved)? TRANSMIT : SOLVE;
+                SOLVE:  state <= (solved)? TRANSMIT : SOLVE;
                 TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
             endcase
         end
