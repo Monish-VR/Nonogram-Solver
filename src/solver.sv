@@ -40,6 +40,9 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     assign row = line_index[0] < num_rows;
     
     logic valid_in_simplify;
+    
+    // logic [6:0] options_left; //options left to get from the fifo
+    // logic [6:0] net_valid_opts;
 
     logic [$clog2(MAX_NUM_OPTIONS) - 1:0] options_left; //options left to get from the fifo
     logic [$clog2(MAX_NUM_OPTIONS) - 1:0] net_valid_opts; //how many valid options we checked
@@ -116,6 +119,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                             options_amnt[line_index[2]] <= net_valid_opts;
                             options_left <= options_amnt[option];
                             state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            // $display("in solver, option amount: %b", options_amnt[option]);
                         end
                         new_index <= option;
                         line_index[0] <= option;

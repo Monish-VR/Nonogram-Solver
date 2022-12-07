@@ -85,6 +85,8 @@ module solver_tb_4x4;
 
         $display("just started");
         started = 1;
+        #10;
+        started = 0;
         option = 0 ; //first line index 
         valid_in = 1;
         old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
@@ -99,29 +101,35 @@ module solver_tb_4x4;
 
         //ROUND 1 :
 
-        `status(option,known,assigned);
+        
         option = 4'b0011; //row 1 opt 1
         valid_in = 1;
+        `status(option,known,assigned);
         #10;
-        `status(option, known,assigned);
+        
         option = 4'b0110; //row 1 opt 2
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option, known,assigned);
         #10;
         option = 4'b1100; //row 1 opt 3
         valid_in = 1;
         `status(option,known,assigned);
         #10;
 
-        `status(option,known,assigned);
+        $display("DONE WITH ROW 1");
+
+        
         option = 4'b0001; //row 2 line index
         valid_in = 1;
-        #10;
         `status(option,known,assigned);
+        #10;
+
+        $display("start with row options: option :%b ", option);
+        
         option = 4'b0011; //row 2 opt 1
         valid_in = 1;
+        `status(option,known,assigned);
         #10;
-        `status(option, known,assigned);
         option = 4'b0110; //row 2 opt 2
         valid_in = 1;
         `status(option,known,assigned);
@@ -136,6 +144,7 @@ module solver_tb_4x4;
         valid_in = 1;
         `status(option,known,assigned);
         #10;
+        
         option = 4'b1010; //R3 op1
         valid_in = 1;
         `status(option,known,assigned);
@@ -151,6 +160,7 @@ module solver_tb_4x4;
 
         //ROW 4 1011
         $display("ROW 4, should assign the row.");
+        // $display("ROW 4, opt amound: %b", old_options_amnt[0011]);
         option = 4'b0011; //R4 ind
         valid_in = 1;
         `status(option,known,assigned);
