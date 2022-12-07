@@ -11,6 +11,8 @@ module top_level (
         output logic [2:0] stat
         
     );
+        
+        //m, n, option per line is pipelined
     
     localparam MAX_ROWS = 11;  // HARDCODED for 11x11
     localparam MAX_COLS = 11;  // HARDCODED for 11x11
