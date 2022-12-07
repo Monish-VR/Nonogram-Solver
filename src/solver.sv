@@ -14,7 +14,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         input wire [15:0] option,
         input wire [$clog2(MAX_ROWS) - 1:0] num_rows,
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
-        input wire [MAX_ROWS + MAX_COLS - 1:0] [6:0] old_options_amnt,  //[0:2*SIZE] [6:0]
+        input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
         output logic new_line,
         output logic [15:0] new_option,
@@ -35,7 +35,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
                                     //(veronica) changed again to match options amount (2*Size) -1
-    logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0]  new_index, base_index;
+    logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0]  new_index, base_index, sol_index;
     logic row,first;
     assign row = line_index[0] < num_rows;
     
@@ -57,6 +57,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 
     logic [LARGEST_DIM-1:0] always1;// a and b
     logic [LARGEST_DIM-1:0] always0;
+    logic [MAX_COLS-1:0] cols_all_known;
+    logic [$clog2(MAX_COLS) - 1:0] num_known_cols;
 
     logic  [(MAX_ROWS * MAX_COLS) - 1:0] known_t; //transpose
     logic  [(MAX_ROWS * MAX_COLS) - 1:0] assigned_t; //transpose
@@ -83,6 +85,19 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
             curr_assign = assigned_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
             curr_known = known_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
         end
+        
+        cols_all_known = '1;
+        num_known_cols = 0;
+        sol_index = 0;
+        for (integer i = 0; i < MAX_ROWS; i = i + 1)begin
+            if (i < num_rows)begin
+                cols_all_known = cols_all_known & known[sol_index +: MAX_COLS];
+                sol_index = sol_index + MAX_COLS;
+            end
+        end
+        for (integer j = 0; j < MAX_COLS; j = j + 1)begin
+            if(cols_all_known[j] && j < num_cols) num_known_cols = num_known_cols + 1;
+        end
     end
     
     always_ff @(posedge clk)begin
@@ -105,7 +120,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     first <= 1;
                 end
                 NEXT_LINE_INDEX: begin
-                    if (known == '1)begin
+                    if (num_known_cols == num_rows)begin
                         solved <= 1;
                         state <= IDLE;
                         new_line <= 0;
