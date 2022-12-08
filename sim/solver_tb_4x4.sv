@@ -22,7 +22,8 @@ module solver_tb_4x4;
     logic clk;
     logic rst;
     logic started;
-    logic [3:0] option,new_op;
+    logic [3:0] new_op;
+    logic [15:0] option;
     logic valid_in;
     logic next;
     logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
@@ -79,9 +80,6 @@ module solver_tb_4x4;
         //col 2: 1000 0100 0010 0001
         //col 3: 1101 
         //col 4: 1010 0101 1001
-
-
-
 
         $display("just started");
         started = 1;
@@ -196,13 +194,13 @@ module solver_tb_4x4;
         option = 4'b0111; //C4 ind
         #10
         `status(option,known,assigned);
-        option = 4'b1010; //R3 op1
+        option = 4'b1010; //C4 op1
         #10;
         `status(option,known,assigned);
-        option = 4'b1001; //R3 op2
+        option = 4'b1001; //C4 op2
         #10;
         `status(option,known,assigned);
-        option = 4'b0101; //R3 op3
+        option = 4'b0101; //C4 op3
         #20;
         `status(option,known,assigned);
         //row 4: 1011 

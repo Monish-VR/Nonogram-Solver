@@ -11,7 +11,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         input wire clk,
         input wire rst,
         input wire started, //indicates board has been parsed, ready to solve
-        input wire [15:0] option,
+        input wire [15:0] option,//TOOD: size larger than nessessary
         input wire [$clog2(MAX_ROWS) - 1:0] num_rows,
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
         input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
@@ -33,21 +33,16 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
     logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
-    logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index, new_index; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
-                                    //(veronica) changed again to match options amount (2*Size) -1
+    logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index, new_index; // to match options amount (2*Size) -1
     logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index, sol_index;
     logic row,first;
     assign row = line_index[0] < num_rows;
     
     logic valid_in_simplify;
-    
-    // logic [6:0] options_left; //options left to get from the fifo
-    // logic [6:0] net_valid_opts;
 
     logic [$clog2(MAX_NUM_OPTIONS) - 1:0] options_left; //options left to get from the fifo
     logic [$clog2(MAX_NUM_OPTIONS) - 1:0] net_valid_opts; //how many valid options we checked
 
-    //logic [SIZE-1:0] last_valid_option; //that is the last valid option we got for this line. we need it for when we transition we want to use it to assign
     logic simp_valid; //out put valid for simplify
 
     logic one_option_case;
@@ -76,7 +71,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 
 //Grab the line from relevant known and assigned blocks
     always_comb begin
-        //inputs to simplify
         //gets relevant line from assigned and known
         if (row) begin
             curr_assign = assigned[MAX_COLS*new_index +: MAX_COLS];
@@ -121,6 +115,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                 end
                 NEXT_LINE_INDEX: begin
                     if (num_known_cols == num_cols)begin
+                        //victory check
                         solved <= 1;
                         state <= IDLE;
                         new_line <= 0;
@@ -134,8 +129,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                             options_amnt[line_index[2]] <= net_valid_opts;
                             options_left <= options_amnt[option];
                             state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
-                            // $display("in solver, option amount: %b", options_amnt[option]);
                         end
+                        //begin new line
                         new_index <= option;
                         line_index[0] <= option;
                         put_back_to_FIFO <= 1;
@@ -147,8 +142,10 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end
                 end
                 MULTIPLE_OPTIONS: begin
+                    //check to see if it contradicts known info
                     if (((curr_assign ^ option) & curr_known) > 0) put_back_to_FIFO <= 0;
                     else begin
+                        //if it doesn't contradict, update values accordingly
                         new_option <= option;
                         net_valid_opts <= net_valid_opts + 1;
                         always1 <= always1 & option;
@@ -160,27 +157,28 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     new_line <= (options_left > 1);
                 end
                 ONE_OPTION: begin
+                    //if there is only one option, it must be that this is the correct option
                     put_back_to_FIFO <= 0;
                     net_valid_opts <= 0;
-                    always1 <= always1 & option;
+                    always1 <= always1 & option;//TODO: I think this unessessary
                     always0 <= always0 & ~option;
                     options_left <= 0;
-                    state <= WRITE;
+                    state <= WRITE;//TODO: I think this may be overkill
                     new_line <= 0;
                 end
                 WRITE: begin
                     new_line <= 1;
-                    //TODO check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
+                    // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row) begin
                         base_index = MAX_COLS*line_index[1];
                         for(integer i = 0; i < MAX_COLS; i = i + 1) begin
                             if(i < num_cols) begin
                                 if (always1[i] == 1) begin 
-                                    known[base_index + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                    known[base_index + i] <= 1;
                                     assigned[base_index+ i] <= 1;
                                 end
                                 if (always0[i] == 1) begin 
-                                    known[base_index + i] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                    known[base_index + i] <= 1; 
                                     assigned[base_index + i] <= 0;
                                 end
                             end
@@ -192,11 +190,11 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                             //and the column is line index-size
                             if(j < num_rows) begin
                                 if (always1[j]) begin 
-                                    known[base_index] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                    known[base_index] <= 1; 
                                     assigned[base_index] <= 1;
                                 end
                                 if (always0[j]) begin 
-                                    known[base_index] <= 1; //-1;//this might be wroing '{1}, suppose to be a whole ist of 1
+                                    known[base_index] <= 1; 
                                     assigned[base_index] <= 0;
                                 end
                             end
@@ -208,6 +206,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                 end
             endcase
         end
+        //pipelining
         state_prev <= state;
         if(state_prev != state)begin
             line_index[1] <= line_index[0];

@@ -9,11 +9,6 @@ $display(" %b  %b  %b \n", KNOWNS[2][0], KNOWNS[2][1], KNOWNS[2][2]); \
 $display("sol: \n %b  %b  %b \n", SOL[0][0], SOL[0][1], SOL[0][2]); \
 $display(" %b  %b  %b \n", SOL[1][0], SOL[1][1], SOL[1][2]); \
 $display(" %b  %b  %b \n", SOL[2][0], SOL[2][1], SOL[2][2]); 
-// $display(" %b  %b  %b \n", KNOWNS);
-
-// $display("\n");
-// $display("option", option);
-// $display("\n");
 
 module solver_tb;
 
@@ -97,7 +92,6 @@ module solver_tb;
         valid_in = 1;
         #10;
         `status(option,known,assigned);
-        // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
         option = 3'b011 ; //row 1 opt 2
         valid_in = 1;
         $display("should assign cell [0] [1] to be known");
