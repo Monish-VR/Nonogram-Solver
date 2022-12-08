@@ -33,9 +33,9 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
     logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
-    logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
+    logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index, new_index; //was $clog2(SIZE)*2  but I(dana) changed it cuz anyway line index come from option which is in spec size
                                     //(veronica) changed again to match options amount (2*Size) -1
-    logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0]  new_index, base_index, sol_index;
+    logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index, sol_index;
     logic row,first;
     assign row = line_index[0] < num_rows;
     
@@ -120,7 +120,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     first <= 1;
                 end
                 NEXT_LINE_INDEX: begin
-                    if (num_known_cols == num_rows)begin
+                    if (num_known_cols == num_cols)begin
                         solved <= 1;
                         state <= IDLE;
                         new_line <= 0;

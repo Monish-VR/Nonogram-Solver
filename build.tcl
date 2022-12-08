@@ -29,7 +29,7 @@ read_xdc ./xdc/top_level.xdc
 set_part $partNum
 
 read_ip IP/fifo_11_by_11.xci
-read_ip IP/ila_0.xci
+#read_ip IP/ila_0.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 
@@ -56,7 +56,7 @@ if { $verbose } {
 # route design and generate bitstream
 
 route_design -directive Explore
-write_bitstream -force $outputDir/test.bit
+write_bitstream -force $outputDir/final.bit
 
 if { $verbose } {
 	report_route_status -file $outputDir/post_route_status.rpt

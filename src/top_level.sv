@@ -56,7 +56,7 @@ module top_level (
         .clk_out1(clk_50mhz)
     ); */
 
-    uart_rx receiver (
+    uart_rx receiver ( //2 probes
         .clk(clk_100mhz),
         .rst(rst),
         .axiid(rx),
@@ -65,7 +65,7 @@ module top_level (
         .axiod(received_data)
     );
 
-    parser parse (
+    parser parse (  // 7 probes
         .clk(clk_100mhz),
         .rst(rst),
         .byte_in(received_data),
@@ -80,7 +80,7 @@ module top_level (
         .flag(flag)
     );
 
-    fifo_11_by_11 fifo (
+    fifo_11_by_11 fifo ( //2 probe (fifo_in, fifo_out)
         .clk(clk_100mhz),               // input wire clk
         .srst(rst),                      // input wire rst
         .din(fifo_in),                  // input wire [15 : 0] din
@@ -92,7 +92,7 @@ module top_level (
     );
 
     //solver Module
-    solver sol (
+    solver sol (    //5 probes
         //TODO: confirm sizes for everything
         .clk(clk_100mhz),
         .rst(rst),
@@ -109,7 +109,31 @@ module top_level (
         .solved(solved) // board is 
     );
 
-    assembler assemble (
+    // ila_0 ila (
+    //     .clk(clk_100mhz),
+    //     .probe0(receive_done),
+    //     .probe1(received_data),
+    //     .probe2(parsed),
+    //     .probe3(parse_write),
+    //     .probe4(parse_line),
+    //     .probe5(options_per_line[0]),
+    //     .probe6(m),
+    //     .probe7(n),
+    //     .probe8(flag),
+    //     .probe9(fifo_write),
+    //     .probe10(next_line),
+    //     .probe11(solve_next),
+    //     .probe12(solve_line),
+    //     .probe13(solution[0]),
+    //     .probe14(solve_write),
+    //     .probe15(solved),
+    //     .probe16(rst),
+    //     .probe17(fifo_full),
+    //     .probe18(fifo_empty),
+    //     .probe19(btnc)
+    // );
+
+    assembler assemble ( //3 probes
         .clk(clk_100mhz),
         .rst(rst),
         .valid_in(solved),
@@ -123,7 +147,7 @@ module top_level (
         .done(assembled)
     );
 
-    uart_tx transmitter (
+    uart_tx transmitter ( //1 probe
         .clk(clk_100mhz),
         .rst(rst),
         .axiiv(transmit_valid),
