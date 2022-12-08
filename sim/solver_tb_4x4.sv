@@ -74,10 +74,10 @@ module solver_tb_4x4;
         //row 1: 0011 0110 1100
         //row 2: 0011 0110 1100
         //row 3: 1010 0101 1001
-        //row 4: 1101 
+        //row 4: 1101 @Q - shouldn't this also have 1011
         //col 1: 1110 0111
         //col 2: 1000 0100 0010 0001
-        //col 3: 1101
+        //col 3: 1101 @Q - same over here
         //col 4: 1010 0101 1001
 
 
