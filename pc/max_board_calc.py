@@ -44,7 +44,7 @@ def max_options(m):
             break
     return (options, n+1, r-1)
 
-m = 11
+m = 16
 
 options,n,r = max_options(m)
 print((n,r))

@@ -23,7 +23,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
         to ensure correctness as much as possible.
     */
 
-    localparam CLK_FRQ = 100_000_000; //100 MHz
+    localparam CLK_FRQ = 50_000_000; //100 MHz
     localparam CYCLES_PER_BIT = CLK_FRQ / BAUD;
     localparam HALF_CYCLE = CYCLES_PER_BIT >> 1;
     localparam COUNTER_WIDTH = $clog2(CYCLES_PER_BIT);

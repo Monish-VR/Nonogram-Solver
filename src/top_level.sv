@@ -9,10 +9,7 @@ module top_level (
         output logic tx,
         output logic [7:0] bits,
         output logic [2:0] stat
-        
     );
-        
-        //m, n, option per line is pipelined
     
     localparam MAX_ROWS = 11;  // HARDCODED for 11x11
     localparam MAX_COLS = 11;  // HARDCODED for 11x11
@@ -25,8 +22,10 @@ module top_level (
 
     localparam CYCLES = 50_000_000;
     localparam MAX_BYTE = 255;
+    localparam COUNTER_WIDTH = $clog2(CYCLES);
 
     logic rst;
+    logic [COUNTER_WIDTH - 1: 0] counter;
     logic [7:0] transmit_data, received_data, display_value;
     logic receive_done, transmit_valid, transmit_done, next_line, read_first_line;
     logic fifo_write, parse_write, solve_write, solve_next;
@@ -39,25 +38,22 @@ module top_level (
     logic [1:0] [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic clk_50mhz;
-    logic parser_valid;
 
+    assign stat = 3'b101;
     assign rst = btnc;
-    logic [2:0] flag;
-    assign stat = fifo_empty;//display_value;
-    assign bits = (state == RECEIVE)? fifo_in[7:0] : fifo_out[7:0];
+    assign bits = display_value;
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
-    assign next_line = solve_next;
-    assign parser_valid = receive_done && state == RECEIVE;
+    //assign next_line =  solve_next;
 
-    /* clk_wiz_50 divider (
+    clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
         .clk_out1(clk_50mhz)
-    ); */
+    );
 
-    uart_rx receiver ( //2 probes
-        .clk(clk_100mhz),
+    uart_rx receiver (
+        .clk(clk_50mhz),
         .rst(rst),
         .axiid(rx),
 
@@ -65,36 +61,63 @@ module top_level (
         .axiod(received_data)
     );
 
-    parser parse (  // 7 probes
-        .clk(clk_100mhz),
+    parser parse (
+        .clk(clk_50mhz),
         .rst(rst),
         .byte_in(received_data),
-        .valid_in(parser_valid),
+        .valid_in(receive_done),
 
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .line(parse_line),
         .options_per_line(options_per_line[0]),
         .n(n[0]),
-        .m(m[0]),
-        .flag(flag)
+        .m(m[0])
     );
 
-    fifo_11_by_11 fifo ( //2 probe (fifo_in, fifo_out)
-        .clk(clk_100mhz),               // input wire clk
+    fifo_11_by_11 fifo (
+        .clk(clk_50mhz),               // input wire clk
         .srst(rst),                      // input wire rst
         .din(fifo_in),                  // input wire [15 : 0] din
         .wr_en(fifo_write),              // input wire wr_en
-        .rd_en(next_line),              // input wire rd_en
+        .rd_en(solve_next),              // input wire rd_en
         .dout(fifo_out),                // output wire [15 : 0] dout
         .full(fifo_full),               // output wire full
         .empty(fifo_empty)             // output wire empty
     );
 
+    ila_0 ila (
+        .clk(clk_50mhz),
+        .probe0(receive_done),
+        .probe1(received_data),
+        .probe2(parsed),
+        .probe3(parse_write),
+        .probe4(parse_line),
+        .probe5(options_per_line[0]),
+        .probe6(m[0]),
+        .probe7(n[0]),
+        .probe8(stat),
+        .probe9(fifo_write),
+        .probe10(next_line),
+        .probe11(solve_next),
+        .probe12(solve_line),
+        .probe13(solution[0]),
+        .probe14(solve_write),
+        .probe15(solved),
+        .probe16(rst),
+        .probe17(fifo_full),
+        .probe18(fifo_empty),
+        .probe19(btnc),
+        .probe20(m[1]),
+        .probe21(n[1]),
+        .probe22(m[2]),
+        .probe23(n[2])
+    );
+
     //solver Module
-    solver sol (    //5 probes
+    solver sol (
         //TODO: confirm sizes for everything
-        .clk(clk_100mhz),
+        .clk(clk_50mhz),
         .rst(rst),
         .started(parsed), //indicates board has been parsed, ready to solve
         .option(fifo_out),
@@ -109,32 +132,8 @@ module top_level (
         .solved(solved) // board is 
     );
 
-    // ila_0 ila (
-    //     .clk(clk_100mhz),
-    //     .probe0(receive_done),
-    //     .probe1(received_data),
-    //     .probe2(parsed),
-    //     .probe3(parse_write),
-    //     .probe4(parse_line),
-    //     .probe5(options_per_line[0]),
-    //     .probe6(m),
-    //     .probe7(n),
-    //     .probe8(flag),
-    //     .probe9(fifo_write),
-    //     .probe10(next_line),
-    //     .probe11(solve_next),
-    //     .probe12(solve_line),
-    //     .probe13(solution[0]),
-    //     .probe14(solve_write),
-    //     .probe15(solved),
-    //     .probe16(rst),
-    //     .probe17(fifo_full),
-    //     .probe18(fifo_empty),
-    //     .probe19(btnc)
-    // );
-
-    assembler assemble ( //3 probes
-        .clk(clk_100mhz),
+    assembler assemble (
+        .clk(clk_50mhz),
         .rst(rst),
         .valid_in(solved),
         .transmit_busy(~transmit_done),
@@ -147,8 +146,8 @@ module top_level (
         .done(assembled)
     );
 
-    uart_tx transmitter ( //1 probe
-        .clk(clk_100mhz),
+    uart_tx transmitter (
+        .clk(clk_50mhz),
         .rst(rst),
         .axiiv(transmit_valid),
         .axiid(transmit_data),
@@ -157,10 +156,11 @@ module top_level (
         .done(transmit_done)
     );
 
-    always_ff @(posedge clk_100mhz)begin
+    always_ff @(posedge clk_50mhz)begin
         if (rst) begin
-            display_value <= '1;
-            state <= RECEIVE;
+            display_value <= 0;
+            counter <= 0;
+            state <= 0;
         end else begin
             options_per_line[1] <= options_per_line[0];
             solution[1] <= solution[0];
@@ -170,7 +170,7 @@ module top_level (
             m[2] <= m[1];
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
-                SOLVE:  state <= (solved)? TRANSMIT : SOLVE;
+                SOLVE: state <= (solved)? TRANSMIT : SOLVE;
                 TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
             endcase
         end

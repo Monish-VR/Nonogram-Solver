@@ -23,7 +23,7 @@ module uart_tx #(parameter BAUD = 'd9600)(
         and the baud of the connection.
     */
 
-    localparam CLK_FRQ = 100_000_000; //100 MHz
+    localparam CLK_FRQ = 50_000_000; //100 MHz
     localparam CYCLES_PER_BIT = CLK_FRQ / BAUD; //Baud is the bits per second transmission rate
     localparam COUNTER_WIDTH = $clog2(CYCLES_PER_BIT);
 

@@ -57,15 +57,16 @@ def rx(ser):
     buffer = ""
     try:
         print("Reading...")
-        while True:#not board_done:
+        while not board_done:
             data = ser.read(1) #read the buffer (99/100 timeout will hit)
             if data != b'':  #if not nothing there.
-                print(byte_to_bitstring(data))
-                """ if not count:
+                print("rx: " + byte_to_bitstring(data))
+                if not count:
                     buffer = byte_to_bitstring(data)
                 else:
                     msg = buffer + byte_to_bitstring(data)
                     flag = msg[:3] #first 3 bits are the flag
+                    print("msg: " + msg)
                     if flag == msg_flags['start']:
                         if m == 0:
                             m = int(msg[3:15],2)
@@ -80,7 +81,7 @@ def rx(ser):
                         x = indx % n
                         y = indx // n
                         board[y][x] = msg[15]
-                count = not count """
+                count = not count
                         
 
 
@@ -101,10 +102,10 @@ def tx(ser, index):
         print("Writing...")
         print(board)
         for i in range(0,len(board),8):
-            print(board[i:i+8])
+            print("tx: " + board[i:i+8])
             v = bitstring_to_bytes(board[i:i+8],1)
             ser.write(v)
-            time.sleep(1)
+            time.sleep(.05)
         return
     except Exception as e:
         print(e)

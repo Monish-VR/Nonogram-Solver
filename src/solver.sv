@@ -109,8 +109,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
             new_line<= '0;
             new_option<= '0;
             put_back_to_FIFO<=0;  //boolean- do we need to push to fifo
-
-
         end else begin
             case(state)
                 IDLE: begin
