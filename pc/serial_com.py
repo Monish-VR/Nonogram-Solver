@@ -46,8 +46,8 @@ def test_tx(ser):
         while True:
             ser.write((data).to_bytes(1,'big')) #write the buffer (99/100 timeout will hit)
             print(str(data) + ", " + str(((data).to_bytes(1,'big'))))
-            data = (data + 1)%100
-            time.sleep(.5)
+            data = (data + 1)%255
+            time.sleep(.05)
     except Exception as e:
         print(e)
         ser.close()

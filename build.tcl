@@ -6,7 +6,7 @@
 
 set partNum xc7a100tcsg324-1
 set outputDir obj
-set verbose 1
+set verbose 0
 
 if { $argc > 0 } {
 	if { $argc == 1 && [string compare [ lindex $argv 0 ] "-d"] == 0 } {
@@ -29,7 +29,7 @@ read_xdc ./xdc/top_level.xdc
 set_part $partNum
 
 read_ip IP/fifo_11_by_11.xci
-read_ip IP/ila_0/ila_0.xci
+#read_ip IP/ila_0/ila_0.xci
 generate_target all [get_ips]
 synth_ip [get_ips]
 

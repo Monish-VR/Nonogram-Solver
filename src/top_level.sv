@@ -35,17 +35,18 @@ module top_level (
     logic parsed, solved, assembled;
     logic [2:0] [$clog2(MAX_ROWS) - 1:0] m;
     logic [2:0] [$clog2(MAX_COLS) - 1:0] n;
-    logic [1:0] [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
+    logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic clk_50mhz;
 
-    assign stat = 3'b101;
+    //assign stat = state;
     assign rst = btnc;
     assign bits = display_value;
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
     //assign next_line =  solve_next;
+    assign stat[2] = state[0];
 
     clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
@@ -58,7 +59,8 @@ module top_level (
         .axiid(rx),
 
         .axiov(receive_done),
-        .axiod(received_data)
+        .axiod(received_data),
+        .state(stat[1:0])
     );
 
     parser parse (
@@ -70,7 +72,7 @@ module top_level (
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .line(parse_line),
-        .options_per_line(options_per_line[0]),
+        .options_per_line(options_per_line),
         .n(n[0]),
         .m(m[0])
     );
@@ -86,14 +88,14 @@ module top_level (
         .empty(fifo_empty)             // output wire empty
     );
 
-    ila_0 ila (
+    /*ila_0 ila (
         .clk(clk_50mhz),
         .probe0(receive_done),
         .probe1(received_data),
         .probe2(parsed),
         .probe3(parse_write),
         .probe4(parse_line),
-        .probe5(options_per_line[0]),
+        .probe5(options_per_line),
         .probe6(m[0]),
         .probe7(n[0]),
         .probe8(stat),
@@ -112,10 +114,10 @@ module top_level (
         .probe21(n[1]),
         .probe22(m[2]),
         .probe23(n[2])
-    );
+    );*/
 
     //solver Module
-    solver sol (
+    /*solver sol (
         //TODO: confirm sizes for everything
         .clk(clk_50mhz),
         .rst(rst),
@@ -123,7 +125,7 @@ module top_level (
         .option(fifo_out),
         .num_rows(m[1]),
         .num_cols(n[1]),
-        .old_options_amnt(options_per_line[1]),  //[0:2*SIZE] [6:0]
+        .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
         .new_line(solve_next),
         .new_option(solve_line),
@@ -146,7 +148,7 @@ module top_level (
         .done(assembled)
     );
 
-    uart_tx transmitter (
+    uart_tx #(.BAUD(115_200)) transmitter (
         .clk(clk_50mhz),
         .rst(rst),
         .axiiv(transmit_valid),
@@ -154,24 +156,28 @@ module top_level (
         
         .axiod(tx),
         .done(transmit_done)
-    );
+    );*/
 
     always_ff @(posedge clk_50mhz)begin
         if (rst) begin
-            display_value <= 0;
             counter <= 0;
             state <= 0;
+            solve_next <= 0;
+            solve_write <= 0;
+            solve_line <= 0;
+            display_value <= 0;
         end else begin
-            options_per_line[1] <= options_per_line[0];
+            //options_per_line[1] <= options_per_line[0];
+            if (receive_done) display_value <= received_data;
             solution[1] <= solution[0];
-            n[1] <= n[0];
+            n[1] <= n[0];       
             n[2] <= n[1];
             m[1] <= m[0];
             m[2] <= m[1];
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
                 SOLVE: state <= (solved)? TRANSMIT : SOLVE;
-                TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
+                //TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
             endcase
         end
     end

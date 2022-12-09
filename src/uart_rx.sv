@@ -7,7 +7,8 @@ module uart_rx #(parameter BAUD = 'd9600)(
         input wire axiid,
         
         output logic axiov,
-        output logic [7:0] axiod
+        output logic [7:0] axiod,
+        output logic [3:0] state
     );
 
     /*
@@ -23,7 +24,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
         to ensure correctness as much as possible.
     */
 
-    localparam CLK_FRQ = 50_000_000; //100 MHz
+    localparam CLK_FRQ = 50_000_000; //50 MHz
     localparam CYCLES_PER_BIT = CLK_FRQ / BAUD;
     localparam HALF_CYCLE = CYCLES_PER_BIT >> 1;
     localparam COUNTER_WIDTH = $clog2(CYCLES_PER_BIT);
@@ -37,7 +38,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
     localparam STOP = 3;
     localparam CLEAN = 4;
 
-    logic [2:0] state;
+    //logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
     logic [2:0] data_index;
 
@@ -45,6 +46,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
         if (rst)begin
             state <= IDLE;
             axiov <= 0;
+            axiod <= 0;
         end else begin
             case (state)
                 IDLE: begin
@@ -55,6 +57,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
                         count <= 1;
                         data_index <= 0;
                     end
+                    //axiod <= 0;
                 end
                 START: begin
                     if (count == HALF_CYCLE) begin
@@ -63,7 +66,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
                             state <= RECEIVE;
                             count <= 1;
                             axiod <= 0;
-                        end 
+                        end
                     end else count <= count + 1;
                 end
                 RECEIVE: begin
@@ -76,7 +79,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
                 end
                 STOP: begin
                     if (count == CYCLES_PER_BIT)begin
-                        axiov <= 1;
+                        axiov <= axiid;
                         state <= CLEAN;
                         count <= 1;
                     end else count <= count + 1;
