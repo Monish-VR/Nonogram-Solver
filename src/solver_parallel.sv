@@ -17,7 +17,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
         input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
         //Taken from the BRAM in the top level- how many options for this line
-        output logic new_line,
+        output logic read_from_fifo1,
+        output logic read_from_fifo2,
         output logic [15:0] new_option1,
         output logic [15:0] new_option2,
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
@@ -37,11 +38,11 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     logic [2:0] state2, state_prev2;
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
-    logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
+    logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt1, options_amnt2; 
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index1, new_index1;
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index2, new_index2;
-    logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index, sol_index;
-    logic row1, row2,first;
+    logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index1, base_index2, sol_index;
+    logic row1, row2,first1, first2;
     assign row1 = line_index1[0] < num_rows;
     assign row2 = line_index2[0] < num_rows;
     logic valid_in_simplify;
@@ -88,18 +89,18 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     always_comb begin
         //gets relevant line from assigned and known
         if (row1) begin
-            curr_assign1 = assigned[MAX_COLS*new_index +: MAX_COLS];
-            curr_known1 = known[MAX_COLS*new_index +: MAX_COLS];
+            curr_assign1 = assigned[MAX_COLS*new_index1 +: MAX_COLS];
+            curr_known1 = known[MAX_COLS*new_index1 +: MAX_COLS];
         end else begin
-            curr_assign1 = assigned_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
-            curr_known1 = known_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
+            curr_assign1 = assigned_t[MAX_ROWS*(new_index1 - num_rows) +: MAX_ROWS];
+            curr_known1 = known_t[MAX_ROWS*(new_index1 - num_rows) +: MAX_ROWS];
         end
         if (row2) begin
-            curr_assign2 = assigned[MAX_COLS*new_index +: MAX_COLS];
-            curr_known2 = known[MAX_COLS*new_index +: MAX_COLS];
+            curr_assign2 = assigned[MAX_COLS*new_index2 +: MAX_COLS];
+            curr_known2 = known[MAX_COLS*new_index2 +: MAX_COLS];
         end else begin
-            curr_assign2 = assigned_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
-            curr_known2 = known_t[MAX_ROWS*(new_index - num_rows) +: MAX_ROWS];
+            curr_assign2 = assigned_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
+            curr_known2 = known_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
         end
         
         cols_all_known = '1;
@@ -120,54 +121,63 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         if(rst)begin
             known <= 0;
             assigned <= 0;
-            net_valid_opts <=0;
+            net_valid_opts1 <=0;
+            net_valid_opts2 <=0;
             solved <= 0;
-            state <= IDLE;
-            first <= 1;
-            new_index <= '0;
-            options_amnt <= '0;
-            line_index <= '0;
-            base_index<= '0;
-            new_line<= '0;
+            state1 <= IDLE;
+            state2 <= IDLE;
+            first1 <= 1;
+            first2 <= 1;
+            new_index1 <= '0;
+            new_index2 <= '0;
+            options_amnt1 <= '0;
+            options_amnt2 <= '0;
+            line_index1 <= '0;
+            line_index2 <= '0;
+            base_index1<= '0;
+            base_index2<= '0;
+            read_from_fifo1<= '0;
+            read_from_fifo2<= '0;
             new_option1<= '0;
             new_option2<= '0;
-            put_back_to_FIFO<=0;  //boolean- do we need to push to fifo
+            put_back_to_FIFO1<=0;
+            put_back_to_FIFO2<=0;    
         end else begin
-            case(state)
+            case(state1)
                 IDLE: begin
                     if (started)begin
-                        new_line <= 1;
-                        state <= NEXT_LINE_INDEX;
+                        read_from_fifo1 <= 1;
+                        state1 <= NEXT_LINE_INDEX;
                     end
                     solved <= 0;
-                    first <= 1;
+                    first1 <= 1;
                 end
                 NEXT_LINE_INDEX: begin
                     if (num_known_cols == num_cols)begin
                         //victory check
                         solved <= 1;
-                        state <= IDLE;
-                        new_line <= 0;
+                        state1 <= IDLE;
+                        read_from_fifo1 <= 0;
                     end else begin
-                        if(first)begin
-                            options_amnt <= old_options_amnt;
-                            options_left <= old_options_amnt[option];
-                            state <= (old_options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
-                            first <= 0;
+                        if(first1)begin
+                            options_amnt1 <= old_options_amnt;
+                            options_left1 <= old_options_amnt[option1];
+                            state1 <= (old_options_amnt[option1] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            first1 <= 0;
                         end else begin
-                            options_amnt[line_index[2]] <= net_valid_opts;
-                            options_left <= options_amnt[option];
-                            state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            options_amnt1[line_index1[2]] <= net_valid_opts1;
+                            options_left1 <= options_amnt1[option1];
+                            state1 <= (options_amnt1[option1] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
-                        new_index <= option;
-                        line_index[0] <= option;
-                        put_back_to_FIFO <= 1;
-                        new_option <= option;
-                        net_valid_opts <= 0;
-                        always1 <= '1;
-                        always0 <= '1;
-                        put_back_to_FIFO <= 1;
+                        new_index1 <= option1;
+                        line_index1[0] <= option1;
+                        put_back_to_FIFO1 <= 1;
+                        new_option1 <= option1;
+                        net_valid_opts1 <= 0;
+                        always1_1 <= '1;
+                        always0_1 <= '1;
+                        put_back_to_FIFO1 <= 1;
                     end
                 end
                 MULTIPLE_OPTIONS: begin
@@ -175,15 +185,104 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     if (((curr_assign1 ^ option1) & curr_known1) > 0) put_back_to_FIFO1 <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
-                        new_option <= option;
+                        new_option1 <= option1;
                         net_valid_opts1 <= net_valid_opts1 + 1;
                         always1_1 <= always1_1 & option1;
                         always0_1 <= always0_1 & ~option1;
-                        put_back_to_FIFO <= 1;
+                        put_back_to_FIFO1 <= 1;
                     end
                     options_left1 <= options_left1 - 1;
                     state1 <= (options_left1 - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
-                    new_line1 <= (options_left1 > 1);
+                    read_from_fifo1 <= (options_left1 > 1);
+                end
+                ONE_OPTION: begin
+                    //if there is only one option, it must be that this is the correct option
+                    put_back_to_FIFO1 <= 0;
+                    net_valid_opts1 <= 0;
+                    always1_1 <= always1_1 & option1;//TODO: I think this unessessary
+                    always0_1 <= always0_1 & ~option1;
+                    options_left1 <= 0;
+                    state1 <= WRITE;//TODO: I think this may be overkill
+                    read_from_fifo1 <= 0;
+                end
+                WRITE: begin
+                    read_from_fifo1 <= 1;
+                    // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
+                    if (row1) begin
+                        base_index1 = MAX_COLS*line_index1[1];
+                        for(integer i = 0; i < MAX_COLS; i = i + 1) begin
+                            if(i < num_cols) begin
+                                if (always1_1[i] == 1) begin 
+                                    known[base_index1 + i] <= 1;
+                                    assigned[base_index1+ i] <= 1;
+                                end
+                                if (always0_1[i] == 1) begin 
+                                    known[base_index1 + i] <= 1; 
+                                    assigned[base_index1 + i] <= 0;
+                                end
+                            end
+                        end
+                    end else begin
+                        base_index1 = (line_index1[1] - num_rows);
+                        for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
+                            // I think the row we indexing into is j
+                            //and the column is line index-size
+                            if(j < num_rows) begin
+                                if (always1_1[j]) begin 
+                                    known[base_index1] <= 1; 
+                                    assigned[base_index1] <= 1;
+                                end
+                                if (always0_1[j]) begin 
+                                    known[base_index1] <= 1; 
+                                    assigned[base_index1] <= 0;
+                                end
+                            end
+                            base_index1 += MAX_COLS;
+                        end
+                    end
+                    state1 <= NEXT_LINE_INDEX;
+                    put_back_to_FIFO1 <= 0;
+                end
+            endcase
+            case(state2)
+                IDLE: begin
+                    if (started)begin
+                        read_from_fifo2 <= 1;
+                        state2 <= NEXT_LINE_INDEX;
+                    end
+                    solved <= 0;
+                    first2 <= 1;
+                end
+                NEXT_LINE_INDEX: begin
+                    if (num_known_cols == num_cols)begin
+                        //victory check
+                        solved <= 1;
+                        state2 <= IDLE;
+                        read_from_fifo2 <= 0;
+                    end else begin
+                        if(first2)begin
+                            options_amnt2 <= old_options_amnt;
+                            options_left2 <= old_options_amnt[option2];
+                            state2 <= (old_options_amnt[option2] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            first2 <= 0;
+                        end else begin
+                            options_amnt2[line_index2[2]] <= net_valid_opts2;
+                            options_left2 <= options_amnt2[option2];
+                            state2 <= (options_amnt2[option2] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                        end
+                        //begin new line
+                        new_index2 <= option2;
+                        line_index2[0] <= option2;
+                        put_back_to_FIFO2 <= 1;
+                        new_option2 <= option2;
+                        net_valid_opts2 <= 0;
+                        always1_2 <= '1;
+                        always0_2 <= '1;
+                        put_back_to_FIFO2 <= 1;
+                    end
+                end
+                MULTIPLE_OPTIONS: begin
+                    //check to see if it contradicts known info
                     if (((curr_assign2 ^ option2) & curr_known2) > 0) put_back_to_FIFO2 <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
@@ -195,95 +294,55 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end
                     options_left2 <= options_left2 - 1;
                     state2 <= (options_left2 - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
-                    new_line2 <= (options_left2 > 1);
+                    read_from_fifo2 <= (options_left2 > 1);
                 end
                 ONE_OPTION: begin
                     //if there is only one option, it must be that this is the correct option
-                    put_back_to_FIFO <= 0;
-                    net_valid_opts <= 0;
-                    always1 <= always1 & option;//TODO: I think this unessessary
-                    always0 <= always0 & ~option;
-                    options_left <= 0;
-                    state <= WRITE;//TODO: I think this may be overkill
-                    new_line <= 0;
-
                     put_back_to_FIFO2 <= 0;
                     net_valid_opts2 <= 0;
                     always1_2 <= always1_2 & option2;//TODO: I think this unessessary
                     always0_2 <= always0_2 & ~option2;
                     options_left2 <= 0;
                     state2 <= WRITE;//TODO: I think this may be overkill
-                    new_line2 <= 0;
+                    read_from_fifo2 <= 0;
                 end
                 WRITE: begin
-                    new_line <= 1;
+                    read_from_fifo2 <= 1;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row2) begin
-                        base_index = MAX_COLS*line_index[1];
+                        base_index2 = MAX_COLS*line_index2[1];
                         for(integer i = 0; i < MAX_COLS; i = i + 1) begin
                             if(i < num_cols) begin
                                 if (always1_2[i] == 1) begin 
-                                    known[base_index + i] <= 1;
-                                    assigned[base_index+ i] <= 1;
+                                    known[base_index2 + i] <= 1;
+                                    assigned[base_index2 + i] <= 1;
                                 end
-                                if (always0_2[i] == 1) begin 
-                                    known[base_index + i] <= 1; 
-                                    assigned[base_index + i] <= 0;
+                                if (always0_1[i] == 1) begin 
+                                    known[base_index2 + i] <= 1; 
+                                    assigned[base_index2 + i] <= 0;
                                 end
                             end
                         end
                     end else begin
-                        base_index = (line_index2[1] - num_rows);
+                        base_index2 = (line_index2[1] - num_rows);
                         for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
                             // I think the row we indexing into is j
                             //and the column is line index-size
                             if(j < num_rows) begin
                                 if (always1_2[j]) begin 
-                                    known[base_index] <= 1; 
-                                    assigned[base_index] <= 1;
+                                    known[base_index2] <= 1; 
+                                    assigned[base_index2] <= 1;
                                 end
                                 if (always0_2[j]) begin 
-                                    known[base_index] <= 1; 
-                                    assigned[base_index] <= 0;
+                                    known[base_index2] <= 1; 
+                                    assigned[base_index2] <= 0;
                                 end
                             end
-                            base_index += MAX_COLS;
+                            base_index2 += MAX_COLS;
                         end
                     end
-                    if (row1) begin
-                        base_index = MAX_COLS*line_index[1];
-                        for(integer i = 0; i < MAX_COLS; i = i + 1) begin
-                            if(i < num_cols) begin
-                                if (always1_1[i] == 1) begin 
-                                    known[base_index + i] <= 1;
-                                    assigned[base_index+ i] <= 1;
-                                end
-                                if (always0_1[i] == 1) begin 
-                                    known[base_index + i] <= 1; 
-                                    assigned[base_index + i] <= 0;
-                                end
-                            end
-                        end
-                    end else begin
-                        base_index = (line_index1[1] - num_rows);
-                        for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
-                            // I think the row we indexing into is j
-                            //and the column is line index-size
-                            if(j < num_rows) begin
-                                if (always1_1[j]) begin 
-                                    known[base_index] <= 1; 
-                                    assigned[base_index] <= 1;
-                                end
-                                if (always0[j]) begin 
-                                    known[base_index] <= 1; 
-                                    assigned[base_index] <= 0;
-                                end
-                            end
-                            base_index += MAX_COLS;
-                        end
-                    end
-                    state <= NEXT_LINE_INDEX;
-                    put_back_to_FIFO <= 0;
+                    state2 <= NEXT_LINE_INDEX;
+                    put_back_to_FIFO2 <= 0;
                 end
             endcase
         end
