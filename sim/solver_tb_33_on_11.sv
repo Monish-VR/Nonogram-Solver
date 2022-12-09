@@ -20,7 +20,8 @@ module solver_tb_33_on_11;
     logic clk;
     logic rst;
     logic started;
-    logic [2:0] option,new_op;
+    logic [15:0] new_op;
+    logic [15:0] option;
     logic valid_in;
     logic next;
     logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
