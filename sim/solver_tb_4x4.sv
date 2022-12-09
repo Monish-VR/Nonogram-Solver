@@ -81,6 +81,26 @@ module solver_tb_4x4;
         //col 3: 1101 
         //col 4: 1010 0101 1001
 
+//ROUND 2:
+        //row 1: 0011 0110 1100
+        //row 2: 0011 0110 1100
+        //row 3: 1010 0101 1001
+        //row 4: 
+        //col 1: 1110 
+        //col 2: 0100 0010 0001
+        //col 3: 
+        //col 4: 1010  1001
+
+//ROUND 3:
+        //row 1: 0110 1100
+        //row 2: 0011 
+        //row 3: 0101 1001
+        //row 4: 
+        //col 1: 1110 
+        //col 2: 0100 0010 0001
+        //col 3: 
+        //col 4: 1010  1001
+
         $display("just started");
         started = 1;
         #10;
@@ -109,7 +129,7 @@ module solver_tb_4x4;
         #20;
         `status(option,known,assigned);
 
-        $display("DONE WITH ROW 1");
+        $display("DONE WITH ROW 1 should not know anything");
 
         
         option = 4'b0001; //row 2 line index
@@ -128,6 +148,8 @@ module solver_tb_4x4;
         #20;
         `status(option,known,assigned);
 
+        $display("DONE WITH ROW 2 should not know anything");
+
         //ROW 3 :1010 0101 1001
         option = 4'b0010; //R3 ind
         #10;
@@ -142,9 +164,10 @@ module solver_tb_4x4;
         option = 4'b0101; //R3 op3
         #20;
         `status(option,known,assigned);
+        $display("DONE WITH ROW 3 should not know anything");
 
         //ROW 4 1101
-        $display("ROW 4, should assign the row.");
+        // $display("ROW 4, should assign the row.");
         // $display("ROW 4, opt amound: %b", old_options_amnt[0011]);
         option = 4'b0011; //R4 ind
         #10;
@@ -152,6 +175,8 @@ module solver_tb_4x4;
         option = 4'b1101; //R4 op1
         #20;
         `status(option,known,assigned);
+
+        $display("DONE WITH ROW 4 should assign it");
 
         //col1
         option = 4'b0100; //C1 ind
@@ -163,6 +188,8 @@ module solver_tb_4x4;
         option = 4'b0111; //C1 op2
         #20;
         `status(option,known,assigned);
+
+        $display("DONE WITH COL 1 should remove to 1 option");
 
         //col2
         option = 4'b0101; //C2 ind
@@ -181,6 +208,8 @@ module solver_tb_4x4;
         #20;
         `status(option,known,assigned);
 
+        $display("DONE WITH COL 2 should remove to 3 options");
+
         //col3
         $display("col 3: 1 option");
         option = 4'b0110; //C3 ind
@@ -189,6 +218,8 @@ module solver_tb_4x4;
         option = 4'b1101; //C3 op1
         #20;
         `status(option,known,assigned);
+
+        $display("DONE WITH COL 3 should assign!");
 
         //col4
         option = 4'b0111; //C4 ind
@@ -203,13 +234,292 @@ module solver_tb_4x4;
         option = 4'b0101; //C4 op3
         #20;
         `status(option,known,assigned);
+
+        $display("DONE WITH COL 4 should remove to 2 options!");
         //row 4: 1011 
         //col 4: 1010 0101 1001
 
+        $display("round 1 is over!");
         $display("is solved? %b",solved);
         //ask about how to print out all the assignments
         // $display("the amount of options left sohuld be 0 but is %b", options_amnt);
         // $display("valid out sohuld be 1 but is %b", valid_out);
+
+//ROUND 2:
+        //row 1: 0011 0110 1100
+        //row 2: 0011 0110 1100
+        //row 3: 1010 0101 1001
+        //row 4: 
+        //col 1: 1110 
+        //col 2: 0100 0010 0001
+        //col 3: 
+        //col 4: 1010  1001
+        
+        option = 0 ; //first line index 
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0011; //row 1 opt 1
+        `status(option,known,assigned);
+        #10;
+        option = 4'b0110; //row 1 opt 2
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1100; //row 1 opt 3
+        #20;
+        `status(option,known,assigned);
+
+
+        $display("DONE WITH ROW 1 now we have 2 options b0110 b1100");
+        //ROW 2
+        option = 4'b0001; //row 2 line index
+        #10;
+        `status(option,known,assigned);
+
+        $display("start with row 2 options: option :%b ", option);
+        
+        option = 4'b0011; //row 2 opt 1  
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0110; //row 2 opt 2
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1100; //row 2 opt 3
+        #20;
+        `status(option,known,assigned);
+
+    $display("DONE WITH ROW 2 now we have 1 options b0011");
+
+        //ROW 3 :1010 0101 1001
+        option = 4'b0010; //R3 ind
+        #10;
+        `status(option,known,assigned);
+        
+        option = 4'b1010; //R3 op1
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1001; //R3 op2
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0101; //R3 op3
+        #20;
+        `status(option,known,assigned);
+
+$display("DONE WITH ROW 3 now we have 1 options 0101");
+        option = 4'b0011; //R4 ind
+
+        #20;
+        `status(option,known,assigned);
+        $display("DONE WITH ROW 4");
+
+        //col1
+        option = 4'b0100; //C1 ind
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1110; //C1 op1
+        #20;
+        `status(option,known,assigned);
+        $display("DONE WITH COL 1 assigned, 0 options");
+
+        //col2
+        option = 4'b0101; //C2 ind
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0100; //C2 op1
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0010; //C2 op3
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0001; //C2 op4
+        #20;
+        `status(option,known,assigned);
+
+        $display("DONE WITH COL 2 ,  1 option - b0100");
+
+        //col3
+        $display("col 3: 1 option");
+        option = 4'b0110; //C3 ind
+
+        #20;
+        `status(option,known,assigned);
+
+        //col4
+        option = 4'b0111; //C4 ind
+        #10
+        `status(option,known,assigned);
+        option = 4'b1010; //C4 op1
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1001; //C4 op2
+        #20;
+        `status(option,known,assigned);
+        $display("DONE WITH COL 2 ,  1 option - b1001");
+
+$display("round 2 is over");
+
+        //ROUND 3:
+        //row 1: 0110 1100
+        //row 2: 0011 
+        //row 3: 0101 
+        //row 4: 
+        //col 1:  
+        //col 2: 0100 
+        //col 3: 
+        //col 4:   1001
+        option = 0 ; //first line index 
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0110; //row 1 opt 2
+        #10;
+        `status(option,known,assigned);
+        option = 4'b1100; //row 1 opt 3
+        #20;
+        `status(option,known,assigned);
+
+        //ROW 2
+        option = 4'b0001; //row 2 line index
+        #10;
+        `status(option,known,assigned);
+
+        $display("start with row 2 options: option :%b ", option);
+        
+        option = 4'b0011; //row 2 opt 1  
+        #20;
+        `status(option,known,assigned);
+
+
+        //ROW 3 :1010 0101 1001
+        option = 4'b0010; //R3 ind
+        #10;
+        // `status(option,known,assigned);
+        // option = 4'b1001; //R3 op2
+        // #10;
+        `status(option,known,assigned);
+        option = 4'b0101; //R3 op3
+        #20;
+        `status(option,known,assigned);
+
+        //col1
+        option = 4'b0100; //C1 ind
+
+        #20;
+        `status(option,known,assigned);
+
+        //col2
+        option = 4'b0101; //C2 ind
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0100; //C2 op1
+        #20;
+        `status(option,known,assigned);
+
+
+        //col3
+        $display("col 3: 1 option");
+        option = 4'b0110; //C3 ind
+
+        #20;
+        `status(option,known,assigned);
+
+        //col4
+        option = 4'b0111; //C4 ind
+        #10
+        // `status(option,known,assigned);
+        // option = 4'b1010; //C4 op1
+        // #10;
+        `status(option,known,assigned);
+        option = 4'b1001; //C4 op2
+        #20;
+        `status(option,known,assigned);
+
+        $display("round 3 is over");
+
+// $display("DONE W round 4");
+
+        //ROUND 4:
+        //row 1: 0110 1100
+        //row 2: 0011 
+        //row 3: 0101 1001
+        //row 4: 
+        //col 1:  
+        //col 2: 0100 0010 0001
+        //col 3: 
+        //col 4: 1010  1001
+        option = 0 ; //first line index 
+        #10;
+        `status(option,known,assigned);
+        option = 4'b0011; //row 1 opt 1
+        `status(option,known,assigned);
+        // #10;
+        // option = 4'b0110; //row 1 opt 2
+        // #10;
+        // `status(option,known,assigned);
+        // option = 4'b1100; //row 1 opt 3
+        #20;
+        `status(option,known,assigned);
+
+        //ROW 2
+        option = 4'b0001; //row 2 line index
+        // #10;
+        // `status(option,known,assigned);
+
+        // $display("start with row 2 options: option :%b ", option);
+        
+        // option = 4'b0011; //row 2 opt 1  
+        #20;
+        `status(option,known,assigned);
+
+
+        //ROW 3 :1010 0101 1001
+        option = 4'b0010; //R3 ind
+        // #10;
+        // // `status(option,known,assigned);
+        // // option = 4'b1001; //R3 op2
+        // // #10;
+        // `status(option,known,assigned);
+        // option = 4'b0101; //R3 op3
+        #20;
+        `status(option,known,assigned);
+
+        //col1
+        option = 4'b0100; //C1 ind
+
+        #20;
+        `status(option,known,assigned);
+
+        //col2
+        option = 4'b0101; //C2 ind
+        // #10;
+        // `status(option,known,assigned);
+        // option = 4'b0100; //C2 op1
+        // #10;
+        // `status(option,known,assigned);
+        // option = 4'b0010; //C2 op3
+        // #10;
+        // `status(option,known,assigned);
+        // option = 4'b0001; //C2 op4
+        #20;
+        `status(option,known,assigned);
+
+
+        //col3
+        $display("col 3: 1 option");
+        option = 4'b0110; //C3 ind
+
+        #20;
+        `status(option,known,assigned);
+
+        //col4
+        option = 4'b0111; //C4 ind
+        #10
+
+        // option = 4'b1010; //C4 op1
+        // #10;
+        `status(option,known,assigned);
+        option = 4'b1001; //C4 op2
+        #20;
+        `status(option,known,assigned);
+// */
 
         #10
         $display("Finishing Sim");
