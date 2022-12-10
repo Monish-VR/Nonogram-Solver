@@ -42,6 +42,11 @@ module uart_rx #(parameter BAUD = 'd9600)(
     logic curr_bit = 1;
     logic next_bit = 1;
 
+    /*
+        FIX :)
+            ISSUE - metastability issues as reading axiid
+            SOLUTION - store axiid in register and read from there
+    */
     always_ff @(posedge clk)begin
         next_bit <= axiid;
         curr_bit <= next_bit;

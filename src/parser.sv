@@ -4,8 +4,8 @@
 module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTIONS=84)(
         input wire clk,
         input wire rst,
-        input wire [7:0] byte_in,
         input wire valid_in,
+        input wire [7:0] byte_in,
         
         output logic board_done,  //signals parser is done
         output logic write_ready, //signals when output to be written to BRAM is done

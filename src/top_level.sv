@@ -26,8 +26,8 @@ module top_level (
 
     logic rst;
     logic [COUNTER_WIDTH - 1: 0] counter;
-    logic [7:0] transmit_data, received_data, display_value, majority_data;
-    logic receive_done, transmit_valid, transmit_done, next_line, majority_done;
+    logic [7:0] transmit_data, received_data, display_value;
+    logic receive_done, transmit_valid, transmit_done, next_line;
     logic fifo_write, parse_write, solve_write, solve_next;
     logic [1:0] state;
     logic [15:0] fifo_in, fifo_out, parse_line, solve_line;
@@ -38,8 +38,9 @@ module top_level (
     logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic clk_50mhz;
+    logic [2:0] flag;
 
-    //assign stat = state;
+    assign stat = {state, fifo_empty};
     assign rst = btnc;
     assign bits = display_value;
     //veronica its beautiful.. ^o^
@@ -66,25 +67,26 @@ module top_level (
     parser parse (
         .clk(clk_50mhz),
         .rst(rst),
-        .byte_in(majority_data),
-        .valid_in(majority_done),
+        .valid_in(receive_done),
+        .byte_in(received_data),
 
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .line(parse_line),
         .options_per_line(options_per_line),
         .n(n[0]),
-        .m(m[0])
+        .m(m[0]),
+        .flag(flag)
     );
 
     fifo_11_by_11 fifo (
         .clk(clk_50mhz),               // input wire clk
-        .srst(rst),                      // input wire rst
-        .din(fifo_in),                  // input wire [15 : 0] din
-        .wr_en(fifo_write),              // input wire wr_en
-        .rd_en(solve_next),              // input wire rd_en
-        .dout(fifo_out),                // output wire [15 : 0] dout
-        .full(fifo_full),               // output wire full
+        .srst(rst),                    // input wire rst
+        .din(fifo_in),                 // input wire [15 : 0] din
+        .wr_en(fifo_write),            // input wire wr_en
+        .rd_en(solve_next),            // input wire rd_en
+        .dout(fifo_out),               // output wire [15 : 0] dout
+        .full(fifo_full),              // output wire full
         .empty(fifo_empty)             // output wire empty
     );
 
@@ -117,7 +119,7 @@ module top_level (
     );*/
 
     //solver Module
-    /*solver sol (
+    solver sol (
         //TODO: confirm sizes for everything
         .clk(clk_50mhz),
         .rst(rst),
@@ -156,15 +158,15 @@ module top_level (
         
         .axiod(tx),
         .done(transmit_done)
-    );*/
+    );
 
     always_ff @(posedge clk_50mhz)begin
         if (rst) begin
             counter <= 0;
             state <= 0;
-            solve_next <= 0;
-            solve_write <= 0;
-            solve_line <= 0;
+            //solve_next <= 0;
+            //solve_write <= 0;
+            //solve_line <= 0;
             display_value <= 0;
         end else begin
             //options_per_line[1] <= options_per_line[0];
