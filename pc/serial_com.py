@@ -5,16 +5,20 @@ import time
 
 def get_usb_port():
     usb_port = list(serial.tools.list_ports.grep("USB"))
+    #usb_port = list(serial.tools.list_ports())
+    print(usb_port)
+    print("blah")
     if len(usb_port) == 1:
         print("Automatically found USB-Serial Controller: {}".format(usb_port[0].description))
         return usb_port[0].device
     else:
         ports = list(serial.tools.list_ports.comports())
+        print(ports)
         port_dict = {i:[ports[i],ports[i].vid] for i in range(len(ports))}
         usb_id=None
         for p in port_dict:
-            #print("{}:   {} (Vendor ID: {})".format(p,port_dict[p][0],port_dict[p][1]))
-            #print(port_dict[p][0],"UART")
+            print("{}:   {} (Vendor ID: {})".format(p,port_dict[p][0],port_dict[p][1]))
+            print(port_dict[p][0],"UART")
             print("UART" in str(port_dict[p][0]))
             if port_dict[p][1]==1027 and "UART" in str(port_dict[p][0]): #for generic USB Devices
                 usb_id = p
@@ -42,12 +46,15 @@ def test_rx(ser):
 def test_tx(ser):
     try:
         print("Writing...")
+        fit = [10,2]
         data = 0
         while True:
-            ser.write((data).to_bytes(1,'big')) #write the buffer (99/100 timeout will hit)
-            print(str(data) + ", " + str(((data).to_bytes(1,'big'))))
-            data = (data + 1)%255
-            time.sleep(.05)
+            ser.write((fit[data]).to_bytes(1,'big')) #write the buffer (99/100 timeout will hit)
+            print(str(fit[data]) + ", " + str(((data).to_bytes(1,'big'))))
+            time.sleep(.02)
+            #print(str(fit[data]) + ", " + str(((data).to_bytes(1,'big'))))
+            data = (data + 1)%2
+            #time.sleep(.02)
     except Exception as e:
         print(e)
         ser.close()

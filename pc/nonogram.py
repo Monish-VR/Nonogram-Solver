@@ -105,7 +105,7 @@ def tx(ser, index):
             print("tx: " + board[i:i+8])
             v = bitstring_to_bytes(board[i:i+8],1)
             ser.write(v)
-            time.sleep(.05)
+            time.sleep(.25)
         return
     except Exception as e:
         print(e)

@@ -7,8 +7,7 @@ module uart_rx #(parameter BAUD = 'd9600)(
         input wire axiid,
         
         output logic axiov,
-        output logic [7:0] axiod,
-        output logic [3:0] state
+        output logic [7:0] axiod
     );
 
     /*
@@ -26,7 +25,6 @@ module uart_rx #(parameter BAUD = 'd9600)(
 
     localparam CLK_FRQ = 50_000_000; //50 MHz
     localparam CYCLES_PER_BIT = CLK_FRQ / BAUD;
-    localparam HALF_CYCLE = CYCLES_PER_BIT >> 1;
     localparam COUNTER_WIDTH = $clog2(CYCLES_PER_BIT);
 
     localparam START_BIT = 1'b0;
@@ -38,60 +36,60 @@ module uart_rx #(parameter BAUD = 'd9600)(
     localparam STOP = 3;
     localparam CLEAN = 4;
 
-    //logic [2:0] state;
+    logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
     logic [2:0] data_index;
+    logic curr_bit = 1;
+    logic next_bit = 1;
 
     always_ff @(posedge clk)begin
-        if (rst)begin
-            state <= IDLE;
-            axiov <= 0;
-            axiod <= 0;
-        end else begin
-            case (state)
-                IDLE: begin
-                    // receiving only starts when the receiver sees the 
-                    // start bit (0)
-                    if (axiid == START_BIT)begin
-                        state <= START;
-                        count <= 1;
-                        data_index <= 0;
-                    end
-                    //axiod <= 0;
-                end
-                START: begin
-                    if (count == HALF_CYCLE) begin
-                        if (axiid != START_BIT) state <= IDLE;
-                        else begin
-                            state <= RECEIVE;
-                            count <= 1;
-                            axiod <= 0;
-                        end
-                    end else count <= count + 1;
-                end
-                RECEIVE: begin
-                    if (count == CYCLES_PER_BIT)begin
-                        axiod[data_index] <= axiid;
-                        if (data_index == 3'd7) state <= STOP;
-                        else data_index <= data_index + 1;
-                        count <= 1;
-                    end else count <= count + 1;
-                end
-                STOP: begin
-                    if (count == CYCLES_PER_BIT)begin
-                        axiov <= axiid;
-                        state <= CLEAN;
-                        count <= 1;
-                    end else count <= count + 1;
-                end
-                CLEAN: begin
-                    state <= IDLE;
-                    axiov <= 0;
-                end
-            endcase
-        end
+        next_bit <= axiid;
+        curr_bit <= next_bit;
     end
 
+    always_ff @(posedge clk)begin
+        case (state)
+            IDLE: begin
+                // receiving only starts when the receiver sees the 
+                // start bit (0)
+                if (curr_bit == START_BIT)begin
+                    state <= START;
+                    count <= 1;
+                    data_index <= 0;
+                end
+                axiod <= 0;
+            end
+            START: begin
+                if (count > (CYCLES_PER_BIT >> 1)) begin
+                    if (curr_bit != START_BIT) state <= IDLE;
+                    else begin
+                        state <= RECEIVE;
+                        count <= 1;
+                        axiod <= 0;
+                    end
+                end else count <= count + 1;
+            end
+            RECEIVE: begin
+                if (count >= CYCLES_PER_BIT)begin
+                    axiod[data_index] <= curr_bit;
+                    if (data_index == 3'd7) state <= STOP;
+                    else data_index <= data_index + 1;
+                    count <= 1;
+                end else count <= count + 1;
+            end
+            STOP: begin
+                if (count >= CYCLES_PER_BIT && curr_bit == STOP_BIT)begin
+                    axiov <= 1;
+                    state <= CLEAN;
+                    count <= 1;
+                end else count <= count + 1;
+            end
+            CLEAN: begin
+                state <= IDLE;
+                axiov <= 0;
+            end
+        endcase
+    end
 endmodule
 
 `default_nettype wire

@@ -26,8 +26,8 @@ module top_level (
 
     logic rst;
     logic [COUNTER_WIDTH - 1: 0] counter;
-    logic [7:0] transmit_data, received_data, display_value;
-    logic receive_done, transmit_valid, transmit_done, next_line, read_first_line;
+    logic [7:0] transmit_data, received_data, display_value, majority_data;
+    logic receive_done, transmit_valid, transmit_done, next_line, majority_done;
     logic fifo_write, parse_write, solve_write, solve_next;
     logic [1:0] state;
     logic [15:0] fifo_in, fifo_out, parse_line, solve_line;
@@ -45,8 +45,9 @@ module top_level (
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
+    assign tx = 1;
     //assign next_line =  solve_next;
-    assign stat[2] = state[0];
+    //assign stat[2] = fifo_empty;
 
     clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
@@ -59,15 +60,14 @@ module top_level (
         .axiid(rx),
 
         .axiov(receive_done),
-        .axiod(received_data),
-        .state(stat[1:0])
+        .axiod(received_data)
     );
 
     parser parse (
         .clk(clk_50mhz),
         .rst(rst),
-        .byte_in(received_data),
-        .valid_in(receive_done),
+        .byte_in(majority_data),
+        .valid_in(majority_done),
 
         .board_done(parsed), //board is done 
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
@@ -148,7 +148,7 @@ module top_level (
         .done(assembled)
     );
 
-    uart_tx #(.BAUD(115_200)) transmitter (
+    uart_tx transmitter (
         .clk(clk_50mhz),
         .rst(rst),
         .axiiv(transmit_valid),
@@ -169,6 +169,7 @@ module top_level (
         end else begin
             //options_per_line[1] <= options_per_line[0];
             if (receive_done) display_value <= received_data;
+            //if (majority_done) display_value <= majority_data;
             solution[1] <= solution[0];
             n[1] <= n[0];       
             n[2] <= n[1];
@@ -177,7 +178,7 @@ module top_level (
             case(state)
                 RECEIVE: state <= (parsed)? SOLVE : RECEIVE;
                 SOLVE: state <= (solved)? TRANSMIT : SOLVE;
-                //TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
+                TRANSMIT: state <= (assembled)? RECEIVE: TRANSMIT;
             endcase
         end
     end
