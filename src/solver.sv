@@ -1,4 +1,3 @@
-
 `timescale 1ns / 1ps
 `default_nettype none
 //assuming line index starts at 0
@@ -115,12 +114,9 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     if (started)begin
                         new_line <= 1;
                         state <= NEXT_LINE_INDEX;
-                    end else new_line <= 0;
-                    state <= (started)? NEXT_LINE_INDEX : IDLE;
-                    new_line <= started;
+                    end
                     solved <= 0;
                     first <= 1;
-                    put_back_to_FIFO<=0;
                 end
                 NEXT_LINE_INDEX: begin
                     if (num_known_cols == num_cols)begin
@@ -148,7 +144,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         always1 <= '1;
                         always0 <= '1;
                         put_back_to_FIFO <= 1;
-                        new_line <= 1;
                     end
                 end
                 MULTIPLE_OPTIONS: begin
