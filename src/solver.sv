@@ -133,7 +133,10 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         end else begin
                             options_amnt[line_index[2]] <= net_valid_opts;
                             options_left <= options_amnt[option];
-                            state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            if (options_amnt[option]==0) begin
+                                state <= NEXT_LINE_INDEX;
+                            end
+                            else state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
                         new_index <= option;

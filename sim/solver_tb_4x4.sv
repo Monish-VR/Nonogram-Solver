@@ -334,7 +334,7 @@ module solver_tb_4x4;
         option = 4'b1001; //C4 op2
         #20;
         `status(option,known,assigned);
-        $display("DONE SHOULD ASSIGN EVERYTHING");
+        $display("DONE with round 2 SHOULD ASSIGN EVERYTHING");
 
 //ROUND 3:
 //ROW 1 ROUND 3:
