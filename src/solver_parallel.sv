@@ -11,16 +11,17 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         input wire clk,
         input wire rst,
         input wire started, //indicates board has been parsed, ready to solve
-        input wire [15:0] option1,//TOOD: size larger than nessessary
-        input wire [15:0] option2,
+        input wire [15:0] option_r,//TOOD: size larger than nessessary
+        input wire [15:0] option_c,
         input wire [$clog2(MAX_ROWS) - 1:0] num_rows,
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
+        //@Nina, @Veronica -We may have to divide this:
         input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
-        //Taken from the BRAM in the top level- how many options for this line
+
         output logic read_from_fifo1,
         output logic read_from_fifo2,
-        output logic [15:0] new_option1,
-        output logic [15:0] new_option2,
+        output logic [15:0] new_option_r,
+        output logic [15:0] new_option_c,
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
         output logic put_back_to_FIFO1,  //boolean- do we need to push to fifo
@@ -86,6 +87,11 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     end
 
 //Grab the line from relevant known and assigned blocks
+
+
+//@ Nina I don't think there's the need for this check since I thought we will 
+//devide to 2 FIFO one for rows and one for columns.
+
     always_comb begin
         //gets relevant line from assigned and known
         if (row1) begin
@@ -138,8 +144,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
             base_index2<= '0;
             read_from_fifo1<= '0;
             read_from_fifo2<= '0;
-            new_option1<= '0;
-            new_option2<= '0;
+            new_option_r<= '0;
+            new_option_c<= '0;
             put_back_to_FIFO1<=0;
             put_back_to_FIFO2<=0;    
         end else begin
@@ -161,19 +167,19 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end else begin
                         if(first1)begin
                             options_amnt1 <= old_options_amnt;
-                            options_left1 <= old_options_amnt[option1];
-                            state1 <= (old_options_amnt[option1] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            options_left1 <= old_options_amnt[option_r];
+                            state1 <= (old_options_amnt[option_r] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                             first1 <= 0;
                         end else begin
                             options_amnt1[line_index1[2]] <= net_valid_opts1;
-                            options_left1 <= options_amnt1[option1];
-                            state1 <= (options_amnt1[option1] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            options_left1 <= options_amnt1[option_r];
+                            state1 <= (options_amnt1[option_r] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
-                        new_index1 <= option1;
-                        line_index1[0] <= option1;
+                        new_index1 <= option_r;
+                        line_index1[0] <= option_r;
                         put_back_to_FIFO1 <= 1;
-                        new_option1 <= option1;
+                        new_option_r <= option_r;
                         net_valid_opts1 <= 0;
                         always1_1 <= '1;
                         always0_1 <= '1;
@@ -182,13 +188,13 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                 end
                 MULTIPLE_OPTIONS: begin
                     //check to see if it contradicts known info
-                    if (((curr_assign1 ^ option1) & curr_known1) > 0) put_back_to_FIFO1 <= 0;
+                    if (((curr_assign1 ^ option_r) & curr_known1) > 0) put_back_to_FIFO1 <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
-                        new_option1 <= option1;
+                        new_option_r <= option_r;
                         net_valid_opts1 <= net_valid_opts1 + 1;
-                        always1_1 <= always1_1 & option1;
-                        always0_1 <= always0_1 & ~option1;
+                        always1_1 <= always1_1 & option_r;
+                        always0_1 <= always0_1 & ~option_r;
                         put_back_to_FIFO1 <= 1;
                     end
                     options_left1 <= options_left1 - 1;
@@ -199,8 +205,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     //if there is only one option, it must be that this is the correct option
                     put_back_to_FIFO1 <= 0;
                     net_valid_opts1 <= 0;
-                    always1_1 <= always1_1 & option1;//TODO: I think this unessessary
-                    always0_1 <= always0_1 & ~option1;
+                    always1_1 <= always1_1 & option_r;//TODO: I think this unessessary
+                    always0_1 <= always0_1 & ~option_r;
                     options_left1 <= 0;
                     state1 <= WRITE;//TODO: I think this may be overkill
                     read_from_fifo1 <= 0;
@@ -262,19 +268,19 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end else begin
                         if(first2)begin
                             options_amnt2 <= old_options_amnt;
-                            options_left2 <= old_options_amnt[option2];
-                            state2 <= (old_options_amnt[option2] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            options_left2 <= old_options_amnt[option_c];
+                            state2 <= (old_options_amnt[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                             first2 <= 0;
                         end else begin
                             options_amnt2[line_index2[2]] <= net_valid_opts2;
-                            options_left2 <= options_amnt2[option2];
-                            state2 <= (options_amnt2[option2] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                            options_left2 <= options_amnt2[option_c];
+                            state2 <= (options_amnt2[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
-                        new_index2 <= option2;
-                        line_index2[0] <= option2;
+                        new_index2 <= option_c;
+                        line_index2[0] <= option_c;
                         put_back_to_FIFO2 <= 1;
-                        new_option2 <= option2;
+                        new_option_c <= option_c;
                         net_valid_opts2 <= 0;
                         always1_2 <= '1;
                         always0_2 <= '1;
@@ -283,13 +289,13 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                 end
                 MULTIPLE_OPTIONS: begin
                     //check to see if it contradicts known info
-                    if (((curr_assign2 ^ option2) & curr_known2) > 0) put_back_to_FIFO2 <= 0;
+                    if (((curr_assign2 ^ option_c) & curr_known2) > 0) put_back_to_FIFO2 <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
-                        new_option2 <= option2;
+                        new_option_c <= option_c;
                         net_valid_opts2 <= net_valid_opts2 + 1;
-                        always1_2 <= always1_2 & option2;
-                        always0_2 <= always0_2 & ~option2;
+                        always1_2 <= always1_2 & option_c;
+                        always0_2 <= always0_2 & ~option_c;
                         put_back_to_FIFO2 <= 1;
                     end
                     options_left2 <= options_left2 - 1;
@@ -300,8 +306,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     //if there is only one option, it must be that this is the correct option
                     put_back_to_FIFO2 <= 0;
                     net_valid_opts2 <= 0;
-                    always1_2 <= always1_2 & option2;//TODO: I think this unessessary
-                    always0_2 <= always0_2 & ~option2;
+                    always1_2 <= always1_2 & option_c;//TODO: I think this unessessary
+                    always0_2 <= always0_2 & ~option_c;
                     options_left2 <= 0;
                     state2 <= WRITE;//TODO: I think this may be overkill
                     read_from_fifo2 <= 0;
