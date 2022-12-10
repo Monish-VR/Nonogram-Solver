@@ -133,7 +133,7 @@ module top_level (
         .new_line(solve_next),
         .new_option(solve_line),
         .assigned(solution[0]),  
-        .known()
+        //.known()
         .put_back_to_FIFO(solve_write),  //boolean- do we need to push to fifo
         .solved(solved) // board is 
     );
