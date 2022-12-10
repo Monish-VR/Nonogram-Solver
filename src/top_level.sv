@@ -47,7 +47,7 @@ module top_level (
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
-    assign tx = 1;
+    //assign tx = 1;
     //assign next_line =  solve_next;
     //assign stat[2] = fifo_empty;
 

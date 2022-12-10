@@ -64,6 +64,7 @@ module solver_tb_4x4;
         rst = 1;
         #10;
         rst = 0;
+        started = 0;
         #10;
 
         //BOARD :
@@ -105,7 +106,7 @@ module solver_tb_4x4;
         started = 1;
         #10;
         started = 0;
-
+        #10;
         old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
         old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
         old_options_amnt[2] = 3;
@@ -479,7 +480,8 @@ module solver_tb_4x4;
         `status(option,known,assigned);
         option = 4'b1110; //C1 op1
         #10;
-        // /*
+        //
+        
         `status(option,known,assigned);
         option = 4'b0111; //C1 op2
         #20;
