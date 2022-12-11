@@ -63,6 +63,13 @@ module solver_tb_33_on_11;
         rst = 1;
         #10;
         rst = 0;
+        started = 0;
+        old_options_amnt[0] = 2; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[2] = 1;
+        old_options_amnt[3] = 1;
+        old_options_amnt[4] = 2;
+        old_options_amnt[5] = 3;
         #10;
 
         //BOARD :
@@ -77,9 +84,6 @@ module solver_tb_33_on_11;
         //col 2: 110 011
         //col 3: 100 010 001
 
-
-
-
         $display("just started");
         started = 1;
         #10;
@@ -87,12 +91,6 @@ module solver_tb_33_on_11;
 
         option = 0 ; //first line index 
         valid_in = 1;
-        old_options_amnt[0] = 2; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[2] = 1;
-        old_options_amnt[3] = 1;
-        old_options_amnt[4] = 2;
-        old_options_amnt[5] = 3;
         #10;
         `status(option,known,assigned);
         option = 3'b110 ; //row 1 opt 1

@@ -35,8 +35,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
     logic first;
     logic row;
     logic [7:0] buffer;
-    //logic [2:0] flag;
-    logic fifo_started;
 
     /////******Hard-coded for now*****//////
     logic [4:0] line_index; //line index is MAX 11 
@@ -59,7 +57,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
             count <= 0;
             line_index <= 0;
             curr_option <= 0;
-            fifo_started <= 0;
         end else begin
             if (valid_in)begin
                 if (!count) buffer <= byte_in;
@@ -91,9 +88,6 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             line <= curr_option;
                             curr_option <= 16'b0;
                             options_per_line[line_index] <= options_per_line[line_index] + 1'b1;
-                            if (~fifo_started)begin
-                                fifo_started <= 1;
-                            end
                         end
                         AND: begin
                             write_ready <= 0;

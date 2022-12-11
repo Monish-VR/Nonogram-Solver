@@ -1,4 +1,4 @@
-
+/* 
 `timescale 1ns / 1ps
 `default_nettype none
 //assuming line index starts at 0
@@ -368,3 +368,4 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 endmodule
 
 `default_nettype wire
+ */

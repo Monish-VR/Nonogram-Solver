@@ -18,7 +18,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
         output logic new_line,
         output logic [15:0] new_option,
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
-        // output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
+        output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
         output logic solved //1 when solution is good
     );
@@ -29,7 +29,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     localparam WRITE = 4;
 
     logic [2:0] state, state_prev;
-    logic [(MAX_ROWS * MAX_COLS) - 1:0] known;
+    //logic [(MAX_ROWS * MAX_COLS) - 1:0] known;
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
     logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
@@ -102,21 +102,25 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
             solved <= 0;
             state <= IDLE;
             first <= 1;
-            new_index <= '0;
-            options_amnt <= '0;
-            line_index <= '0;
-            base_index<= '0;
-            new_line<= '0;
-            new_option<= '0;
-            put_back_to_FIFO<=0;  //boolean- do we need to push to fifo
+            new_index <= 0;
+            options_amnt <= 0;
+            line_index <= 0;
+            base_index <= 0;
+            new_line <= 0;
+            new_option <= 0;
+            put_back_to_FIFO <= 0;  //boolean- do we need to push to fifo
         end else begin
             case(state)
                 IDLE: begin
-                    new_line <= started || new_line;
-                    state <= (new_line)? NEXT_LINE_INDEX: IDLE;
+                    if (started)begin
+                        new_line <= 1;
+                        options_amnt <= old_options_amnt;
+                        state <= NEXT_LINE_INDEX;
+                        known <= 0;
+                        assigned <= 0;
+                    end
                     solved <= 0;
                     first <= 1;
-                    put_back_to_FIFO <= 0;
                 end
                 NEXT_LINE_INDEX: begin
                     if (num_known_cols == num_cols)begin
@@ -126,20 +130,12 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         new_line <= 0;
                         put_back_to_FIFO <= 0;
                     end else begin
-                        if(first)begin
-                            options_amnt <= old_options_amnt;
-                            options_left <= old_options_amnt[option];
-                            state <= (old_options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
-                            first <= 0;
-                        end else begin
-                            options_amnt[line_index[2]] <= net_valid_opts;
-                            options_left <= options_amnt[option];
-                            if (options_amnt[option]==0) begin
-                                state <= NEXT_LINE_INDEX;
-                            end
-                            else state <= (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                        if(!first) options_amnt[line_index[2]] <= net_valid_opts;
+                        if (options_amnt[option] > 0) begin
+                            state <= (options_amnt[option]==0)? NEXT_LINE_INDEX : (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
+                        options_left <= options_amnt[option];
                         new_index <= option;
                         line_index[0] <= option;
                         put_back_to_FIFO <= 1;
@@ -149,6 +145,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         always0 <= '1;
                         put_back_to_FIFO <= 1;
                         new_line <= 1;
+                        first <= 0;
                     end
                 end
                 MULTIPLE_OPTIONS: begin

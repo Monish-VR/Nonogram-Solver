@@ -199,7 +199,7 @@ module top_level (
         .n(n[2]),  //11x11
         .m(m[2]),  //11x11
 
-        .transmit_ready(transmit_valid),
+        .send(transmit_valid),
         .byte_out(transmit_data),
         .done(assembled)
     );
