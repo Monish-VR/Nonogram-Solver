@@ -28,13 +28,13 @@ read_xdc ./xdc/top_level.xdc
 
 set_part $partNum
 
-read_ip IP/fifo_11_by_11.xci
+#read_ip IP/fifo_11_by_11.xci
 #read_ip IP/ila_0/ila_0.xci
-generate_target all [get_ips]
-synth_ip [get_ips]
+#generate_target all [get_ips]
+#synth_ip [get_ips]
 
 # synth
-synth_design -top top_level -part $partNum -verbose
+synth_design -top fpga_to_pc -part $partNum -verbose
 report_utilization -file $outputDir/post_synth_util.rpt
 if { $verbose } {
 	report_timing_summary -file $outputDir/post_synth_timing_summary.rpt

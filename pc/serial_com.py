@@ -33,12 +33,14 @@ def test_rx(ser):
     try:
         print("Reading...")
         while True:
-            data = ser.read(1) #read the buffer (99/100 timeout will hit)
+            data = ser.read(10) #read the buffer (99/100 timeout will hit)
             if data != b'':  #if not nothing there.
-                if data[0]<=127: #if going to be valid ascii...
-                    print("ASCII: {}, Value: {}".format(data.decode('ascii'),data[0]))
-                else:
-                    print("Invalid ASCII, Value: {}".format(data[0]))
+                print(data)
+                """ for i in range(10):
+                    if data[i]<=127: #if going to be valid ascii...
+                        print("ASCII: {}, Value: {}".format(data.decode('ascii'),data[i]))
+                    else:
+                        print("Invalid ASCII, Value: {}".format(data[i])) """
     except Exception as e:
         print(e)
         ser.close()
@@ -77,8 +79,8 @@ def main():
         print("No Serial Device :/ Check USB cable connections/device!")
         exit()
 
-    #test_rx(ser)
-    test_tx(ser)
+    test_rx(ser)
+    #test_tx(ser)
 
 if __name__ == "__main__":
     main()

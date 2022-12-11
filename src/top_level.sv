@@ -40,9 +40,11 @@ module top_level (
     logic [(MAX_ROWS * MAX_COLS) - 1:0] knowns;
     logic clk_50mhz;
     logic [2:0] flag;
+    logic fifo_rst;
 
     assign stat = {state, fifo_empty};
     assign rst = btnc;
+    assign fifo_rst = rst || solved;
     assign bits = display_value;
     //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
@@ -82,7 +84,7 @@ module top_level (
 
     fifo_11_by_11 fifo (
         .clk(clk_50mhz),               // input wire clk
-        .srst(rst),                    // input wire rst
+        .srst(fifo_rst),                    // input wire rst
         .din(fifo_in),                 // input wire [15 : 0] din
         .wr_en(fifo_write),            // input wire wr_en
         .rd_en(solve_next),            // input wire rd_en
@@ -218,13 +220,11 @@ module top_level (
         if (rst) begin
             counter <= 0;
             state <= 0;
-            //solve_next <= 0;
-            //solve_write <= 0;
-            //solve_line <= 0;
             display_value <= 0;
         end else begin
             //options_per_line[1] <= options_per_line[0];
             if (receive_done) display_value <= received_data;
+            else if (transmit_done) display_value <= transmit_data;
             //if (majority_done) display_value <= majority_data;
             solution[1] <= solution[0];
             n[1] <= n[0];       

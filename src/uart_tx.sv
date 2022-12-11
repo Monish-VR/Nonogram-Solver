@@ -34,51 +34,55 @@ module uart_tx #(parameter BAUD = 'd9600)(
     localparam START = 1;
     localparam TRANSMIT = 2;
     localparam STOP = 3;
+    localparam CLEAN = 4;
 
-    logic [1:0] state;
+    logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
     logic [2:0] data_index;
 
     always_ff @(posedge clk)begin
         if (rst)begin
             state <= IDLE;
-            done <= 1;
-            axiod <= 1;
+            done <= 0;
+            axiod <= STOP_BIT;
         end else begin
             case (state)
                 IDLE: begin
                     if (axiiv)begin
-                        axiod <= START_BIT;
                         state <= START;
                         count <= 1;
                         data_index <= 0;
-                        done <= 0;
                     end
+                    done <= 0;
                 end
                 START: begin
-                    if (count == CYCLES_PER_BIT)begin
+                    axiod <= START_BIT;
+                    if (count >= CYCLES_PER_BIT)begin
                         state <= TRANSMIT;
-                        axiod <= axiid[data_index];
                         count <= 1;
                     end else count <= count + 1;
                 end
                 TRANSMIT: begin
-                    if (count == CYCLES_PER_BIT)begin
-                        if (data_index == 3'd7) begin
-                            state <= STOP;
-                            axiod <= STOP_BIT;
-                        end else begin
+                    axiod <= axiid[data_index];
+                    if (count >= CYCLES_PER_BIT)begin
+                        if (data_index < 3'd7) begin
                             data_index <= data_index + 1;
-                            axiod <= axiid[data_index + 1];
+                        end else begin
+                            state <= STOP;
                         end
                         count <= 1;
                     end else count <= count + 1;
                 end
                 STOP: begin
-                    if (count == CYCLES_PER_BIT)begin
+                    axiod <= STOP_BIT;
+                    if (count >= CYCLES_PER_BIT)begin
                         done <= 1;
-                        state <= IDLE;
+                        state <= CLEAN;
                     end else count <= count + 1;
+                end
+                CLEAN: begin
+                    state <= IDLE;
+                    done <= 0;
                 end
             endcase
         end
