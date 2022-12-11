@@ -1,4 +1,4 @@
-/* 
+
 `timescale 1ns / 1ps
 `default_nettype none
 //assuming line index starts at 0
@@ -6,7 +6,7 @@
 //packed arrays give the values the opposite way from what we expect, so array of 3X3, 
 //when we call array[0] it will give the last 3 bits
 
-module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_NUM_OPTIONS=84)(
+module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_NUM_OPTIONS=84)(
         //TODO: confirm sizes for everything
         input wire clk,
         input wire rst,
@@ -368,4 +368,4 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
 endmodule
 
 `default_nettype wire
- */
+ 

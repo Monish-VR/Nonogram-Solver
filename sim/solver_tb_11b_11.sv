@@ -74,7 +74,6 @@ module solver_tb_11b_11;
         #10;
         rst = 0;
         started = 0;
-        #10;
 
         //BOARD :
         // 1 1 1 1 1 1 1 1 1 1 1
@@ -113,11 +112,7 @@ module solver_tb_11b_11;
        //col 11: 11111111111       
 
         $display("just started");
-        started = 1;
-        #10;
-        started = 0;
-        #10;
-
+      
         option = 0 ; //first line index 
         valid_in = 1;
         old_options_amnt[0] = 1; 
@@ -142,7 +137,10 @@ module solver_tb_11b_11;
         old_options_amnt[19] = 1; 
         old_options_amnt[20] = 1;
         old_options_amnt[21] = 1;
-
+        #10;
+        started = 1;
+        #10;
+        started = 0;
         #10;
         `status(option,known,assigned);
         option = 11'b11111111111; //row 1 opt 1
