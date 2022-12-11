@@ -5,7 +5,7 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
         input wire clk,
         input wire rst,
         input wire valid_in,
-        input wire transmit_busy,
+        input wire transmit_done,
         input wire [(MAX_ROWS * MAX_COLS) - 1:0] solution,
         input wire [$clog2(MAX_ROWS) - 1:0] m,
         input wire [$clog2(MAX_COLS) - 1:0] n,
@@ -22,8 +22,9 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
     */
     // states
     localparam IDLE = 0;
-    localparam WAIT = 1;
-    localparam TRANSMIT = 2;
+    localparam TRANSMIT = 1;
+    localparam WAIT = 2;
+
 
     localparam START = 0;
     localparam ASSIGN = 1;
@@ -63,7 +64,7 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
             case(state)
                 IDLE: begin
                     if(valid_in)begin
-                        state <= WAIT;
+                        state <= TRANSMIT;
                         transmit_stage_state <= START;
                         row_index <= 0;
                         col_index <= 0;
@@ -74,10 +75,6 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
                         first_half <= 1;
                     end
                     done <= 0;
-                end
-                WAIT: begin
-                    state <= (transmit_busy)? WAIT: TRANSMIT;
-                    send <= 0;
                 end
                 TRANSMIT: begin
                     if (first_half)begin
@@ -133,6 +130,10 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
                         send <= 1;
                     end
                     first_half <= ~first_half;
+                end
+                WAIT: begin
+                    state <= (transmit_done)? TRANSMIT: WAIT;
+                    send <= 0;
                 end
             endcase
         end

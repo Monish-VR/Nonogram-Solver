@@ -43,7 +43,7 @@ def display_board(board,m,n):
     print("SOLUTION ({}x{}):".format(m,n))
     for y in range(m):
         for x in range(n):
-            val = "#" if (board[y][x] == '1') else " "
+            val = board[y][x]#"#" if (board[y][x] == '1') else " "
             print(val,end="")
         print("")
     return
@@ -67,6 +67,9 @@ def rx(ser):
                     msg = buffer + byte_to_bitstring(data)
                     flag = msg[:3] #first 3 bits are the flag
                     print("msg: " + msg)
+                    print("flag: " + flag)
+                    print("index: " + msg[3:15])
+                    print("value: " + msg[15])
                     if flag == msg_flags['start']:
                         if m == 0:
                             m = int(msg[3:15],2)
@@ -81,6 +84,7 @@ def rx(ser):
                         x = indx % n
                         y = indx // n
                         board[y][x] = msg[15]
+                        display_board(board,m,n)
                 count = not count
                         
 

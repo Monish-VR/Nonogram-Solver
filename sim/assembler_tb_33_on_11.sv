@@ -9,14 +9,14 @@
 
 `define STOP 16'b00000000_00000000
 
-`define SOLUTION 33'b000000001010000000011000000000111
+`define SOLUTION 33'b000000001010000000001000000000011
 
-module assembler_tb;
+module assembler_tb_11;
 
     logic clk;
     logic rst;
     logic valid_in;
-    logic busy;
+    logic done;
     //logic [10:0] [10:0] solution;
     logic [32:0] sol;
     //logic [3:0] n,m;
@@ -29,7 +29,7 @@ module assembler_tb;
         .clk(clk),
         .rst(rst),
         .valid_in(valid_in),
-        .transmit_busy(busy),
+        .transmit_done(done),
         .solution(sol),
         .m(4'd3),
         .n(4'd3),
@@ -47,7 +47,7 @@ module assembler_tb;
 
     initial begin
         $dumpfile("assembler_11.vcd");
-        $dumpvars(0, assembler_tb);
+        $dumpvars(0, assembler_tb_11);
         $display("Starting Sim Assembler");
         clk = 0;
         rst = 0;
@@ -66,7 +66,7 @@ module assembler_tb;
         #20;
 
         //first message sent - m
-        busy = 0;
+        done = 0;
         #20;
         busy = 1;
         #10;

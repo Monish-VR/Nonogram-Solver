@@ -8,7 +8,8 @@ module uart_tx #(parameter BAUD = 'd9600)(
         input wire [7:0] axiid,
         
         output logic axiod,
-        output logic done
+        output logic done,
+        output logic [2:0] state
     );
 
     /*
@@ -36,7 +37,7 @@ module uart_tx #(parameter BAUD = 'd9600)(
     localparam STOP = 3;
     localparam CLEAN = 4;
 
-    logic [2:0] state;
+    //logic [2:0] state;
     logic [COUNTER_WIDTH - 1:0] count;
     logic [2:0] data_index;
 

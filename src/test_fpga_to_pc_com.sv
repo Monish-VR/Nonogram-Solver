@@ -11,7 +11,7 @@ module fpga_to_pc (
         output logic [2:0] stat
     );
 
-    assign stat = {1, state};
+    //assign stat = {1, state};
     
     localparam START = 0;
     localparam TRANSMIT = 1;
@@ -36,7 +36,8 @@ module fpga_to_pc (
         .axiid(display_value),
         
         .axiod(tx),
-        .done(transmit_done)
+        .done(transmit_done),
+        .state(stat)
     );
 
     clk_wiz_50 divider (

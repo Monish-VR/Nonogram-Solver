@@ -33,9 +33,13 @@ def test_rx(ser):
     try:
         print("Reading...")
         while True:
-            data = ser.read(10) #read the buffer (99/100 timeout will hit)
+            data = ser.read(1) #read the buffer (99/100 timeout will hit)
             if data != b'':  #if not nothing there.
                 print(data)
+                input_int = int.from_bytes(data,"big")#int(input_bytes.hex(),16)
+                print(input_int)
+                bit_str = format(input_int, '08b')
+                print(bit_str)
                 """ for i in range(10):
                     if data[i]<=127: #if going to be valid ascii...
                         print("ASCII: {}, Value: {}".format(data.decode('ascii'),data[i]))

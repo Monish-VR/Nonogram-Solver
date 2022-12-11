@@ -196,7 +196,7 @@ module top_level (
         .clk(clk_50mhz),
         .rst(rst),
         .valid_in(solved),
-        .transmit_busy(~transmit_done),
+        .transmit_done(transmit_done),
         .solution(solution[1]),
         .n(n[2]),  //11x11
         .m(m[2]),  //11x11
