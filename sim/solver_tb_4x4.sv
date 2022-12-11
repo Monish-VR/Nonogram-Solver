@@ -65,7 +65,16 @@ module solver_tb_4x4;
         #10;
         rst = 0;
         started = 0;
+        old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[2] = 3;
+        old_options_amnt[3] = 1;
+        old_options_amnt[4] = 2;
+        old_options_amnt[5] = 4;
+        old_options_amnt[6] = 1;
+        old_options_amnt[7] = 3;
         #10;
+
 
         //BOARD :
         // 0 0 1 1
@@ -106,15 +115,6 @@ module solver_tb_4x4;
         started = 1;
         #10;
         started = 0;
-        #10;
-        old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[2] = 3;
-        old_options_amnt[3] = 1;
-        old_options_amnt[4] = 2;
-        old_options_amnt[5] = 4;
-        old_options_amnt[6] = 1;
-        old_options_amnt[7] = 3;
 
 //ROUND 1 :
         option = 0 ; //first line index 
