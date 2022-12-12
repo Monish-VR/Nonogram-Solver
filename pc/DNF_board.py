@@ -114,7 +114,7 @@ def generate(lines, lines_ortho, cols_bool=False):
         r = lines[i]
         solutions = get_sols(len(lines_ortho),r)
         for option in solutions:
-            line_or.append(format_converter(option, i,len(lines), cols_bool))
+            line_or.append(format_converter(option, i,len(lines_ortho), cols_bool))
         DNF_formula.append(line_or)
     
     return DNF_formula
@@ -144,7 +144,7 @@ def make_DNF(rows, cols):
     """
     DNF_rows = reduce(generate(rows, cols, False),True,len(cols))
     #print(DNF_rows)
-    DNF_cols = reduce(generate(cols, rows, True),False,len(cols))
+    DNF_cols = reduce(generate(cols, rows, True),False,len(rows))
     #print(DNF_cols)
     formula = make_serial(len(rows), len(cols),DNF_rows + DNF_cols)
     i=0
@@ -153,8 +153,10 @@ def make_DNF(rows, cols):
         i = i + 16 """
     return formula
 
-r = [[2],[1]]
-c = [[1],[2]]
+""" r = [[2],[1]]
+c = [[1],[2]] """
+r = [[3], []]#[[2],[1],[1,1]]
+c = [[1], [1], [1]]#[[1,1],[2],[1]]
         
 def main():
     make_DNF(r,c)
