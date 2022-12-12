@@ -35,15 +35,15 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
     logic first;
     logic row;
     logic [7:0] buffer;
+    logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index;
 
-    /////******Hard-coded for now*****//////
-    logic [4:0] line_index; //line index is MAX 11 
-    //logic [6:0] num_options; //max is 84 (9 choose 3)
-    logic [15:0] curr_option;
-    logic [3:0] assignment_index;
+    logic [15:0] curr_option; // hardcoded based upon FIFO
+    logic [6:0] assignment_index;
+    logic assignment_value;
 
     assign flag = buffer[7:5];
-    assign assignment_index = byte_in[4:1]; //hard_coded
+    assign assignment_index = byte_in[7:1];
+    assign assignment_value = byte_in[0];
 
     always_ff @(posedge clk)begin
         if (rst)begin
@@ -68,8 +68,8 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             line_index <= 0;
                             line <= 0;
                             curr_option <= 0;
-                            if (first) n <= byte_in[5:1]; // hard coded
-                            else m <= byte_in[5:1]; // hard-coded
+                            if (first) m <= {buffer[4:0], assignment_index};
+                            else n <= {buffer[4:0], assignment_index};
                             first <= !first;
                         end
                         END_BOARD: begin
@@ -79,15 +79,15 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                         START_LINE: begin
                             write_ready <= 1;
                             line <= line_index;
-                            curr_option <= 15'b0;
-                            options_per_line[line_index] <= 7'b0;
+                            curr_option <= 0;
+                            options_per_line[line_index] <= 0;
                         end
                         END_LINE: begin 
                             line_index <= line_index + 1;
                             write_ready <= 1;
                             line <= curr_option;
-                            curr_option <= 16'b0;
-                            options_per_line[line_index] <= options_per_line[line_index] + 1'b1;
+                            curr_option <= 0;
+                            options_per_line[line_index] <= options_per_line[line_index] + 1;
                         end
                         AND: begin
                             write_ready <= 0;

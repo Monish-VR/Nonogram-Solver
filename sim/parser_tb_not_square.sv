@@ -2,14 +2,15 @@
 `timescale 1ns / 1ps
 
 `define START_M	16'b11100000_00000100
-`define START_N 16'b11100000_00000100
+`define START_N 16'b11100000_00000110
 
-`define LINE_1_4 64'b11000000_00000000_10100000_00000001_10100000_00000011_00100000_00000000
-`define LINE_2_3 112'b11000000_00000000_10100000_00000001_10100000_00000010_01000000_00000000_10100000_00000000_10100000_00000011_00100000_00000000
+`define LINE_1 80'b11000000_00000000_10100000_00000001_10100000_00000011_10100000_00000101_00100000_00000000
+`define LINE_2 80'b11000000_00000000_10100000_00000000_10100000_00000010_10100000_00000100_00100000_00000000
+`define LINE_3_to_5 112'b11000000_00000000_10100000_00000001_10100000_00000010_01000000_00000000_10100000_00000000_10100000_00000011_00100000_00000000
 
 `define STOP 16'b00000000_00000000
 
-module parser_tb;
+module parser_tb_2x3;
 
     logic [7:0] byte_in;
 
@@ -50,8 +51,8 @@ module parser_tb;
     end
 
     initial begin
-        $dumpfile("parser.vcd");
-        $dumpvars(0, parser_tb);
+        $dumpfile("parser_2x3.vcd");
+        $dumpvars(0, parser_tb_2x3);
         $display("Starting Sim Parser");
         clk = 0;
         rst = 0;
@@ -86,65 +87,52 @@ module parser_tb;
 
         #20;
 
-        serial_bits = `LINE_1_4;
+        serial_bits = `LINE_1; //row 1
 
-        for (int i = 63; i>0; i = i - 8)begin
+        for (int i = 79; i>0; i = i - 8)begin
             byte_in = serial_bits[i -: 8];
             valid_in = 1;
             #10;
             valid_in = 0;
             #10;
-            $display("output should be (11): %b", line);
+            $display("output should be (111): %b", line);
         end
 
-        $display("output should be (11): %b", line);
+        $display("output should be (111): %b", line);
         #20;
         $display("next");
 
-        serial_bits = `LINE_2_3;
+        serial_bits = `LINE_2; //row 2
 
-        for (int i = 111; i>0; i = i - 8)begin
+        for (int i = 79; i>0; i = i - 8)begin
             byte_in = serial_bits[i -: 8];
             valid_in = 1;
             #10;
             valid_in = 0;
             #10;
+            $display("output should be (000): %b", line);
+        end
+
+        $display("output should be (000): %b", line);
+        #20;
+        $display("next");
+
+        serial_bits = `LINE_3_to_5; //cols 1 - 3
+
+        for (int j = 0; j < 3; j = j + 1)begin
+            for (int i = 111; i>0; i = i - 8)begin
+                byte_in = serial_bits[i -: 8];
+                valid_in = 1;
+                #10;
+                valid_in = 0;
+                #10;
+                $display("output should be (01) and then (10): %b", line);
+            end
+
             $display("output should be (01) and then (10): %b", line);
+            #20;
+            $display("next");
         end
-
-        $display("output should be (01) and then (10): %b", line);
-        #20;
-        $display("next");
-
-        serial_bits = `LINE_2_3;
-
-        for (int i = 111; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-            $display("output should be (01) and then (10): %b", line);
-        end
-
-        $display("output should be (01) and then (10): %b", line);
-        #20;
-        $display("next");
-
-        serial_bits = `LINE_1_4;
-
-        for (int i = 63; i>0; i = i - 8)begin
-            byte_in = serial_bits[i -: 8];
-            valid_in = 1;
-            #10;
-            valid_in = 0;
-            #10;
-            $display("output should be (11): %b", line);
-        end
-
-        $display("output should be (11): %b", line);
-        #20;
-        $display("next");
 
         serial_bits = `STOP;
 

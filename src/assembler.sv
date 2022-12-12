@@ -71,7 +71,7 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
                         real_index <= 0;
                         relative_index <= 0;
                         send <= 0;
-                        first_start_msg <= 0;
+                        first_start_msg <= 1;
                         first_half <= 1;
                     end
                     done <= 0;
@@ -83,11 +83,11 @@ module assembler#(parameter MAX_ROWS = 11, parameter MAX_COLS = 11)(
                                 flag <= START_BOARD;
                                 assignment_value <= 0;
                                 if (first_start_msg) begin
-                                    assignment_index <= n;
-                                    transmit_stage_state <= ASSIGN;
-                                end else begin
                                     assignment_index <= m;
                                     transmit_stage_state <= START;
+                                end else begin
+                                    assignment_index <= n;
+                                    transmit_stage_state <= ASSIGN;
                                 end
                                 state <= WAIT;
                                 send <= 1;

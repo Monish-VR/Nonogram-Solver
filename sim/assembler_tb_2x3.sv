@@ -1,9 +1,9 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-`define SOLUTION 33'b000000001010000000001000000000011
+`define SOLUTION 22'b0000000000000000000111
 
-module assembler_tb_11;
+module assembler_tb_2x3;
 
     logic clk;
     logic rst;
@@ -23,7 +23,7 @@ module assembler_tb_11;
         .valid_in(valid_in),
         .transmit_done(done),
         .solution(sol),
-        .m(4'd3),
+        .m(4'd2),
         .n(4'd3),
 
         .send(send),
@@ -38,8 +38,8 @@ module assembler_tb_11;
     end
 
     initial begin
-        $dumpfile("assembler_11.vcd");
-        $dumpvars(0, assembler_tb_11);
+        $dumpfile("assembler_2x3.vcd");
+        $dumpvars(0, assembler_tb_2x3);
         $display("Starting Sim Assembler");
         clk = 0;
         rst = 0;
@@ -51,7 +51,7 @@ module assembler_tb_11;
         rst = 0;
         #10;
 
-        sol = {88'b0,`SOLUTION};
+        sol = {99'b0,`SOLUTION};
         valid_in = 1;
         #10;
         valid_in = 0;
@@ -135,50 +135,6 @@ module assembler_tb_11;
         #10;
 
         //next message - 5
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        //next message - 6
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        //next message - 7
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        //next message - 8
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        done = 1;
-        #20;
-        done = 0;
-        #10;
-
-        //next message - 9
         done = 1;
         #20;
         done = 0;
