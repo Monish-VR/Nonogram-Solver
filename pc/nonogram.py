@@ -66,10 +66,10 @@ def rx(ser):
                 else:
                     msg = buffer + byte_to_bitstring(data)
                     flag = msg[:3] #first 3 bits are the flag
-                    print("msg: " + msg)
+                    """ print("msg: " + msg)
                     print("flag: " + flag)
                     print("index: " + msg[3:15])
-                    print("value: " + msg[15])
+                    print("value: " + msg[15]) """
                     if flag == msg_flags['start']:
                         if m == 0:
                             m = int(msg[3:15],2)

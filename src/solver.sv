@@ -115,10 +115,10 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     if (started)begin
                         new_line <= 1;
                         options_amnt <= old_options_amnt;
-                        state <= NEXT_LINE_INDEX;
                         known <= 0;
                         assigned <= 0;
                     end
+                    if (new_line) state <= NEXT_LINE_INDEX;
                     solved <= 0;
                     first <= 1;
                 end
@@ -161,7 +161,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end
                     options_left <= options_left - 1;
                     state <= (options_left - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
-                    new_line <= 1;
+                    new_line <= options_left > 1;
                 end
                 ONE_OPTION: begin
                     //if there is only one option, it must be that this is the correct option
@@ -171,10 +171,10 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     always0 <= always0 & ~option;
                     options_left <= 0;
                     state <= WRITE;//TODO: I think this may be overkill
-                    new_line <= 1;
+                    new_line <= 0;
                 end
                 WRITE: begin
-                    new_line <= 0;
+                    new_line <= 1;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row) begin
                         base_index = MAX_COLS*line_index[1];

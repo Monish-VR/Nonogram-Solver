@@ -18,12 +18,12 @@ module assembler_tb_11;
     logic valid_in;
     logic done;
     //logic [10:0] [10:0] solution;
-    logic [32:0] sol;
+    logic [120:0] sol;
     //logic [3:0] n,m;
 
     logic send;
     logic [7:0] byte_out;
-    logic done;
+    logic assemble_done;
 
     assembler uut (
         .clk(clk),
@@ -36,7 +36,7 @@ module assembler_tb_11;
 
         .send(send),
         .byte_out(byte_out),
-        .done(done)
+        .done(assemble_done)
     );
 
 
@@ -51,7 +51,7 @@ module assembler_tb_11;
         $display("Starting Sim Assembler");
         clk = 0;
         rst = 0;
-        busy = 1;
+        done = 0;
         valid_in = 0;
         #5;
         rst = 1;
@@ -59,158 +59,158 @@ module assembler_tb_11;
         rst = 0;
         #10;
 
-        sol = `SOLUTION;
+        sol = {88'b0,`SOLUTION};
         valid_in = 1;
         #10;
         valid_in = 0;
         #20;
 
         //first message sent - m
-        done = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //2nd message sent - n
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 0
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 1
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 2
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 3
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 4
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 5
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 6
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 7
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 8
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //next message - 9
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
         //stop message
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
-        busy = 0;
+        done = 1;
         #20;
-        busy = 1;
+        done = 0;
         #10;
 
 
         //nothing should happen
-        busy = 0;
+        done = 1;
         #20;
 
 
