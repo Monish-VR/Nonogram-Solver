@@ -109,7 +109,7 @@ def input_board():
         constraints = input(q)
         rows_info.append(constraints.split())
     for col in range(int(col_amnt)):
-        q = "tell me contraints of col " + str(row) + ": "
+        q = "tell me contraints of col " + str(col) + ": "
         constraints = input(q)
         cols_info.append(constraints.split())
     return rows_info,cols_info
@@ -117,9 +117,11 @@ def input_board():
 
 def tx(ser, index):
     #TODO: comment out the below line if you want a hardcoded board
-    #r,c = input_board()
-    r = [[2],[1],[1,1]]
-    c = [[1,1],[2],[1]]
+    r,c = input_board()
+    print(r)
+    print(c)
+    #r = [[2],[1],[1,1]]
+    #c = [[1,1],[2],[1]]
     board = DNF_board.make_DNF(r,c)
     #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:
@@ -192,7 +194,8 @@ def test_rx(input):
             count = not count
 
 if __name__ == "__main__":
-    main() 
+    print(input_board())
+    #main() 
     
     """ byt = bitstring_to_bytes("1000000000101100")
     print(type(byt))

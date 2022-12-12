@@ -6,6 +6,12 @@
 //packed arrays give the values the opposite way from what we expect, so array of 3X3, 
 //when we call array[0] it will give the last 3 bits
 
+
+//NOTE: this will not work with an unsolvable board. Always1 and always0 may contradict and then you will try to write 
+// two different values to the same location in assigned. Unsure what iverilog would do but would be bad
+//I figured maybe this would just be an input constraint that this doesn't happen but now I'm unclear given 
+// we also had this for the non-parallel version but there is an unsolvable testbench. 
+//Would you prefer we check for this?
 module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_NUM_OPTIONS=84)(
         //TODO: confirm sizes for everything
         input wire clk,
@@ -17,6 +23,8 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
         //@Nina, @Veronica -We may have to divide this:
         input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
+        //TODOI:  unsure if there would be issues with accessing it twice witihn the same clock cycle
+            //idk if you'd like one for rows and one for columns seperately
 
         output logic read_from_fifo_r,
         output logic read_from_fifo_c,
@@ -59,6 +67,8 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
     logic one_option_case1;
     logic one_option_case2;
 
+    //TODO: be consistent on naming- I like the 1,2 division to generalize to more FIFO's but 
+    //if you prefer r,c then everything here sohuld be changed to that
     logic [LARGEST_DIM-1:0] curr_assign1; //one line input of assigned input to simplify
     logic [LARGEST_DIM-1:0] curr_known1; //one line input of known input to simplif
     logic [LARGEST_DIM-1:0] curr_assign2; //one line input of assigned input to simplify
@@ -88,10 +98,6 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
     end
 
 //Grab the line from relevant known and assigned blocks
-
-
-//@ Nina I don't think there's the need for this check since I thought we will 
-//devide to 2 FIFO one for rows and one for columns.
 
     always_comb begin
         //gets relevant line from assigned and known
@@ -138,7 +144,6 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
             new_index1 <= '0;
             new_index2 <= '0;
             options_amnt <= '0;
-            // options_amnt2 <= '0;
             line_index1 <= '0;
             line_index2 <= '0;
             base_index1<= '0;

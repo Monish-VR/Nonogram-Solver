@@ -10,13 +10,16 @@ $display("sol: \n %b  %b  %b \n", SOL[0], SOL[1], SOL[2]); \
 $display(" %b  %b  %b \n", SOL[11], SOL[12], SOL[13]); \
 $display(" %b  %b  %b \n", SOL[22], SOL[23], SOL[24]); 
 
-module solver_tb_33_on_11;
+
+module parallel_3x3_tb;
 
     logic clk;
     logic rst;
     logic started;
-    logic [15:0] new_op;
-    logic [15:0] option;
+    logic [15:0] new_op1;
+    logic [15:0] new_op2;
+    logic [15:0] option1;
+    logic [15:0] option2;
     logic valid_in;
     logic next;
     logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
@@ -25,18 +28,29 @@ module solver_tb_33_on_11;
     logic solved;
     logic [120:0] known;
 
+        output logic read_from_fifo_c,
+        output logic [15:0] new_option_r,
+        output logic [15:0] new_option_c,
+        output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
+        output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
 
-    solver uut (
+
+    parrallel_solver uut (
         .clk(clk),
         .rst(rst),
         .started(started),
-        .option(option),
+        .option_r(option1),
+        .option_c(option2),
         .num_rows(4'd3),
         .num_cols(4'd3),
         .old_options_amnt(old_options_amnt),
 
-        .new_line(next),
-        .new_option(new_op),
+        .read_from_fifo_c(),
+        .read_from_fifo_r(),
+        .new_option_r(new_op1),
+        .new_option_c(new_op2),
+        .put_back_to_FIFO_c()
+        .put_back_to_FIFO_r()
         .put_back_to_FIFO(put_back_to_FIFO),  
         .assigned(assigned),
         .known(known),
@@ -48,8 +62,8 @@ module solver_tb_33_on_11;
         clk = !clk;
     end
     initial begin
-        $dumpfile("solver_33_on_11.vcd");
-        $dumpvars(0, solver_tb_33_on_11);
+        $dumpfile("parallel_3x3.vcd");
+        $dumpvars(0, parallel_3x3.vcd);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;
