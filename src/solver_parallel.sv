@@ -11,21 +11,21 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
         input wire clk,
         input wire rst,
         input wire started, //indicates board has been parsed, ready to solve
-        input wire [15:0] option_r,//TOOD: size larger than nessessary
+        input wire [15:0] option_r, 
         input wire [15:0] option_c,
         input wire [$clog2(MAX_ROWS) - 1:0] num_rows,
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
         //@Nina, @Veronica -We may have to divide this:
         input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
 
-        output logic read_from_fifo1,
-        output logic read_from_fifo2,
+        output logic read_from_fifo_r,
+        output logic read_from_fifo_c,
         output logic [15:0] new_option_r,
         output logic [15:0] new_option_c,
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
-        output logic put_back_to_FIFO1,  //boolean- do we need to push to fifo
-        output logic put_back_to_FIFO2,  //boolean- do we need to push to fifo
+        output logic put_back_to_FIFO_r,  //boolean- do we need to push to fifo
+        output logic put_back_to_FIFO_c,  //boolean- do we need to push to fifo
 
         output logic solved //1 when solution is good
     );
@@ -39,7 +39,8 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
     logic [2:0] state2, state_prev2;
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
-    logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt1, options_amnt2; 
+    logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt;// options_amnt2; 
+    
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index1, new_index1;
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index2, new_index2;
     logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index1, base_index2, sol_index;
@@ -136,24 +137,27 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
             first2 <= 1;
             new_index1 <= '0;
             new_index2 <= '0;
-            options_amnt1 <= '0;
-            options_amnt2 <= '0;
+            options_amnt <= '0;
+            // options_amnt2 <= '0;
             line_index1 <= '0;
             line_index2 <= '0;
             base_index1<= '0;
             base_index2<= '0;
-            read_from_fifo1<= '0;
-            read_from_fifo2<= '0;
+            read_from_fifo_r<= '0;
+            read_from_fifo_c<= '0;
             new_option_r<= '0;
             new_option_c<= '0;
-            put_back_to_FIFO1<=0;
-            put_back_to_FIFO2<=0;    
+            put_back_to_FIFO_r<=0;
+            put_back_to_FIFO_c<=0;    
         end else begin
             case(state1)
                 IDLE: begin
                     if (started)begin
-                        read_from_fifo1 <= 1;
+                        read_from_fifo_r <= 1;
+                        options_amnt <= old_options_amnt;
                         state1 <= NEXT_LINE_INDEX;
+                        known <= 0;
+                        assigned <= 0;
                     end
                     solved <= 0;
                     first1 <= 1;
@@ -163,56 +167,53 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                         //victory check
                         solved <= 1;
                         state1 <= IDLE;
-                        read_from_fifo1 <= 0;
+                        read_from_fifo_r <= 0;
+                        put_back_to_FIFO_r <= 0;
                     end else begin
-                        if(first1)begin
-                            options_amnt1 <= old_options_amnt;
-                            options_left1 <= old_options_amnt[option_r];
-                            state1 <= (old_options_amnt[option_r] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
-                            first1 <= 0;
-                        end else begin
-                            options_amnt1[line_index1[2]] <= net_valid_opts1;
-                            options_left1 <= options_amnt1[option_r];
-                            state1 <= (options_amnt1[option_r] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                        if(!first1) options_amnt[line_index1[2]] <= net_valid_opts1;
+                        if (options_amnt[option_r] > 0) begin
+                            state1 <= (options_amnt[option_r]==0)? NEXT_LINE_INDEX : (options_amnt[option_r] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
-                        //begin new line
+                        options_left1 <= options_amnt[option_r];
                         new_index1 <= option_r;
                         line_index1[0] <= option_r;
-                        put_back_to_FIFO1 <= 1;
+                        put_back_to_FIFO_r <= 1;
                         new_option_r <= option_r;
                         net_valid_opts1 <= 0;
                         always1_1 <= '1;
                         always0_1 <= '1;
-                        put_back_to_FIFO1 <= 1;
+                        put_back_to_FIFO_r <= 1;
+                        read_from_fifo_r <= 1;
+                        first1 <= 0;
                     end
                 end
                 MULTIPLE_OPTIONS: begin
                     //check to see if it contradicts known info
-                    if (((curr_assign1 ^ option_r) & curr_known1) > 0) put_back_to_FIFO1 <= 0;
+                    if (((curr_assign1 ^ option_r) & curr_known1) > 0) put_back_to_FIFO_r <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
                         new_option_r <= option_r;
                         net_valid_opts1 <= net_valid_opts1 + 1;
                         always1_1 <= always1_1 & option_r;
                         always0_1 <= always0_1 & ~option_r;
-                        put_back_to_FIFO1 <= 1;
+                        put_back_to_FIFO_r <= 1;
                     end
                     options_left1 <= options_left1 - 1;
                     state1 <= (options_left1 - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
-                    read_from_fifo1 <= (options_left1 > 1);
+                    read_from_fifo_r <= (options_left1 > 1);
                 end
                 ONE_OPTION: begin
                     //if there is only one option, it must be that this is the correct option
-                    put_back_to_FIFO1 <= 0;
+                    put_back_to_FIFO_r <= 0;
                     net_valid_opts1 <= 0;
                     always1_1 <= always1_1 & option_r;//TODO: I think this unessessary
                     always0_1 <= always0_1 & ~option_r;
                     options_left1 <= 0;
                     state1 <= WRITE;//TODO: I think this may be overkill
-                    read_from_fifo1 <= 0;
+                    read_from_fifo_r <= 0;
                 end
                 WRITE: begin
-                    read_from_fifo1 <= 1;
+                    read_from_fifo_r <= 0;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row1) begin
                         base_index1 = MAX_COLS*line_index1[1];
@@ -247,16 +248,19 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                         end
                     end
                     state1 <= NEXT_LINE_INDEX;
-                    put_back_to_FIFO1 <= 0;
+                    put_back_to_FIFO_r <= 0;
                 end
             endcase
             case(state2)
                 IDLE: begin
                     if (started)begin
-                        read_from_fifo2 <= 1;
+                        read_from_fifo_c <= 1;
+                        // options_amnt <= old_options_amnt; //did it in state 1
                         state2 <= NEXT_LINE_INDEX;
+                        // known <= 0; //did it in state 1
+                        // assigned <= 0;//did it in state 1
                     end
-                    solved <= 0;
+                    // solved <= 0;//did it in state 1
                     first2 <= 1;
                 end
                 NEXT_LINE_INDEX: begin
@@ -264,56 +268,53 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                         //victory check
                         solved <= 1;
                         state2 <= IDLE;
-                        read_from_fifo2 <= 0;
+                        read_from_fifo_c <= 0;
+                        put_back_to_FIFO_c <= 0;
                     end else begin
-                        if(first2)begin
-                            options_amnt2 <= old_options_amnt;
-                            options_left2 <= old_options_amnt[option_c];
-                            state2 <= (old_options_amnt[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
-                            first2 <= 0;
-                        end else begin
-                            options_amnt2[line_index2[2]] <= net_valid_opts2;
-                            options_left2 <= options_amnt2[option_c];
-                            state2 <= (options_amnt2[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
+                        if(!first2) options_amnt[line_index2[2]] <= net_valid_opts2;
+                        if (options_amnt[option_r] > 0) begin
+                            state2 <= (options_amnt[option_c]==0)? NEXT_LINE_INDEX : (options_amnt[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
-                        //begin new line
+                        options_left2 <= options_amnt[option_c];
                         new_index2 <= option_c;
                         line_index2[0] <= option_c;
-                        put_back_to_FIFO2 <= 1;
+                        put_back_to_FIFO_c <= 1;
                         new_option_c <= option_c;
                         net_valid_opts2 <= 0;
                         always1_2 <= '1;
                         always0_2 <= '1;
-                        put_back_to_FIFO2 <= 1;
+                        put_back_to_FIFO_c <= 1;
+                        read_from_fifo_c <= 1;
+                        first2 <= 0;
                     end
                 end
                 MULTIPLE_OPTIONS: begin
                     //check to see if it contradicts known info
-                    if (((curr_assign2 ^ option_c) & curr_known2) > 0) put_back_to_FIFO2 <= 0;
+                    if (((curr_assign2 ^ option_c) & curr_known2) > 0) put_back_to_FIFO_c <= 0;
                     else begin
                         //if it doesn't contradict, update values accordingly
                         new_option_c <= option_c;
                         net_valid_opts2 <= net_valid_opts2 + 1;
                         always1_2 <= always1_2 & option_c;
                         always0_2 <= always0_2 & ~option_c;
-                        put_back_to_FIFO2 <= 1;
+                        put_back_to_FIFO_c <= 1;
                     end
                     options_left2 <= options_left2 - 1;
                     state2 <= (options_left2 - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
-                    read_from_fifo2 <= (options_left2 > 1);
+                    read_from_fifo_c <= (options_left2 > 1);
                 end
                 ONE_OPTION: begin
                     //if there is only one option, it must be that this is the correct option
-                    put_back_to_FIFO2 <= 0;
+                    put_back_to_FIFO_c <= 0;
                     net_valid_opts2 <= 0;
                     always1_2 <= always1_2 & option_c;//TODO: I think this unessessary
                     always0_2 <= always0_2 & ~option_c;
                     options_left2 <= 0;
                     state2 <= WRITE;//TODO: I think this may be overkill
-                    read_from_fifo2 <= 0;
+                    read_from_fifo_c <= 0;
                 end
                 WRITE: begin
-                    read_from_fifo2 <= 1;
+                    read_from_fifo_c <= 1;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
                     if (row2) begin
                         base_index2 = MAX_COLS*line_index2[1];
@@ -348,7 +349,7 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                         end
                     end
                     state2 <= NEXT_LINE_INDEX;
-                    put_back_to_FIFO2 <= 0;
+                    put_back_to_FIFO_c <= 0;
                 end
             endcase
         end
