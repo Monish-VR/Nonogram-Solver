@@ -88,6 +88,7 @@ module solver_tb_33_on_11;
         started = 1;
         #10;
         started = 0;
+        #10;
 
         option = 0 ; //first line index 
         valid_in = 1;

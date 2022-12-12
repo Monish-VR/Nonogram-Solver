@@ -143,6 +143,7 @@ module solver_tb_11b_11;
         started = 0;
         #10;
         `status(option,known,assigned);
+        #10;
         option = 11'b11111111111; //row 1 opt 1
         valid_in = 1;
         #20;

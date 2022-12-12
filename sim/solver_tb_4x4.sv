@@ -115,6 +115,7 @@ module solver_tb_4x4;
         started = 1;
         #10;
         started = 0;
+        #10;
 
 //ROUND 1 :
         option = 0 ; //first line index 

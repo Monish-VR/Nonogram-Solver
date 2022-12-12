@@ -75,7 +75,6 @@ module solver_tb_2;
 
         $display("just started");
         started = 1;
-        option = 0 ; //first line index 
         valid_in = 1;
         old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
         old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
@@ -84,8 +83,12 @@ module solver_tb_2;
         old_options_amnt[4] = 3;
         old_options_amnt[5] = 3;
         #10;
+
         `status(option,known,assigned);
         started = 0;
+        #10;
+        option = 0 ; //first line index 
+        #10;
         option = 3'b100 ; //row 1 opt 1
         valid_in = 1;
         `status(option,known,assigned);

@@ -77,6 +77,7 @@ module solver_tb;
         started = 1;
         #10;
         started = 0;
+        #10;
 
         option = 0 ; //first line index 
         valid_in = 1;
