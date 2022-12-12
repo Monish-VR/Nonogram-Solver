@@ -29,7 +29,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     localparam WRITE = 4;
 
     logic [2:0] state, state_prev;
-    //logic [(MAX_ROWS * MAX_COLS) - 1:0] known;
 
     localparam LARGEST_DIM = (MAX_ROWS > MAX_COLS)? MAX_ROWS : MAX_COLS;
     logic [MAX_ROWS + MAX_COLS - 1:0] [6:0] options_amnt; 
@@ -143,7 +142,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         net_valid_opts <= 0;
                         always1 <= '1;
                         always0 <= '1;
-                        put_back_to_FIFO <= 1;
                         new_line <= 1;
                         first <= 0;
                     end
@@ -193,8 +191,6 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     end else begin
                         base_index = (line_index[1] - num_rows);
                         for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
-                            // I think the row we indexing into is j
-                            //and the column is line index-size
                             if(j < num_rows) begin
                                 if (always1[j]) begin 
                                     known[base_index] <= 1; 

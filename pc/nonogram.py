@@ -117,9 +117,9 @@ def input_board():
 
 def tx(ser, index):
     #TODO: comment out the below line if you want a hardcoded board
-    r,c = input_board()
-    #r = [[2],[1],[1,1]]
-    #c = [[1,1],[2],[1]]
+    #r,c = input_board()
+    r = [[2],[1],[1,1]]
+    c = [[1,1],[2],[1]]
     board = DNF_board.make_DNF(r,c)
     #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:

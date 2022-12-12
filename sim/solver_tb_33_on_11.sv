@@ -263,9 +263,6 @@ module solver_tb_33_on_11;
         #10;
 
         $display("is solved? %b",solved);
-        //ask about how to print out all the assignments
-        // $display("the amount of options left sohuld be 0 but is %b", options_amnt);
-        // $display("valid out sohuld be 1 but is %b", valid_out);
 
         #10
         $display("Finishing Sim");
