@@ -4,7 +4,11 @@ import serial
 import time
 
 msg_flags = {'start' : '111' , 'end': '000', 'assignment':'101'}
-boards = [([[2],[1]], [[1],[2]]), ([[1]], [[1]])]
+boards = [([[2],[1]], [[1],[2]]), #2x2
+          ([[1]], [[1]]),
+          ([[1],[1]], [[2],[]]), 
+          ([[3],[1,1]],[[2],[1],[2]]) #2x3
+          ]
 
 
 def connect():
@@ -42,9 +46,9 @@ def byte_to_bitstring(input_bytes):
 
 def display_board(board,m,n):
     print("SOLUTION ({}x{}):".format(m,n))
-    for y in range(m):
-        for x in range(n):
-            val = board[y][x]#"#" if (board[y][x] == '1') else " "
+    for x in range(m):
+        for y in range(n):
+            val = board[x][y]#"#" if (board[y][x] == '1') else " "
             print(val,end="")
         print("")
     return
@@ -76,15 +80,15 @@ def rx(ser):
                             m = int(msg[3:15],2)
                         else:
                             n = int(msg[3:15],2)
-                            board = [ [ None for y in range(m) ] for x in range(n) ]
+                            board = [ [ None for y in range(n) ] for x in range(m) ]
                     elif flag == msg_flags['end']:
                         display_board(board,m,n)
                         board_done = True
                     elif flag == msg_flags['assignment']:
                         indx = int(msg[3:15],2)
-                        x = indx % n
-                        y = indx // n
-                        board[y][x] = msg[15]
+                        x = indx // n
+                        y = indx % n
+                        board[x][y] = msg[15]
                         #display_board(board,m,n)
                 count = not count
     except Exception as e:
@@ -122,7 +126,7 @@ def tx(ser, r,c):
     board_rep = DNF_board.make_DNF(r,c)
     #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:
-        print("Sending puzzle to FPGA...\n")
+        print("\nSending puzzle to FPGA...\n")
 
         print("Rows:")
         for constraint in r:
@@ -149,9 +153,17 @@ def main():
         r,c = input_board() if method else boards[index]
         tx(connection, r, c)
         rx(connection)
-        time.sleep(1)
+        time.sleep(.5)
         index = (index+1) % len(boards)
-        input("\nEnter any character to continue (or ctrl+z to exit): ")
+        next = input("\nEnter any character to continue (or 'q' to exit): ").upper()
+        if next == 'Q':
+            break
+    
+    print("\nThank you for playing!")
+
+    """ r,c = boards[3]
+    tx(connection, r, c)
+    rx(connection) """
 
 def test_rx(input):
     board_done = False

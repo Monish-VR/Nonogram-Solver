@@ -5,9 +5,6 @@ import time
 
 def get_usb_port():
     usb_port = list(serial.tools.list_ports.grep("USB"))
-    #usb_port = list(serial.tools.list_ports())
-    print(usb_port)
-    print("blah")
     if len(usb_port) == 1:
         print("Automatically found USB-Serial Controller: {}".format(usb_port[0].description))
         return usb_port[0].device
