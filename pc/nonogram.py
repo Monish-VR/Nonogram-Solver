@@ -4,6 +4,7 @@ import serial
 import time
 
 msg_flags = {'start' : '111' , 'end': '000', 'assignment':'101'}
+boards = [([[2],[1]], [[1],[2]]), ([[1]], [[1]])]
 
 
 def connect():
@@ -19,9 +20,9 @@ def connect():
             timeout=0.01) #auto-connects already I guess?
         print("Serial Connected!")
         if ser.isOpen():
-            print(ser.name + ' is open...')
+            print(ser.name + ' is open...\n')
     else:
-        print("No Serial Device :/ Check USB cable connections/device!")
+        print("No Serial Device :/ Check USB cable connections/device!\n")
         exit()
 
     return ser
@@ -56,11 +57,11 @@ def rx(ser):
     count = 0
     buffer = ""
     try:
-        print("Reading...")
+        print("\nReading solution from FPGA...\n")
         while not board_done:
             data = ser.read(1) #read the buffer (99/100 timeout will hit)
             if data != b'':  #if not nothing there.
-                print("rx: " + byte_to_bitstring(data))
+                #print("rx: " + byte_to_bitstring(data))
                 if not count:
                     buffer = byte_to_bitstring(data)
                 else:
@@ -84,18 +85,20 @@ def rx(ser):
                         x = indx % n
                         y = indx // n
                         board[y][x] = msg[15]
-                        display_board(board,m,n)
+                        #display_board(board,m,n)
                 count = not count
-                        
-
-
-
     except Exception as e:
         print(e)
         ser.close()
-        
-
     return
+
+def get_input_method():
+    input_method = input("Do you want to manually input boards (Y) or use pre-coded boards (N)? ").upper()
+    while input_method != 'Y' and input_method != 'N':
+        print("Please enter 'Y' or 'N'.")
+        input_method = input("Do you want to manually input boards (Y) or use pre-coded boards (N)? ").upper()
+        print(input_method)
+    return input_method == 'Y'
 
 def input_board():
     row_amnt = input("how many rows do you have? ")
@@ -115,41 +118,40 @@ def input_board():
     return rows_info,cols_info
 
 
-def tx(ser, index):
-    #TODO: comment out the below line if you want a hardcoded board
-    r,c = input_board()
-    print(r)
-    print(c)
-    #r = [[2],[1],[1,1]]
-    #c = [[1,1],[2],[1]]
-    board = DNF_board.make_DNF(r,c)
+def tx(ser, r,c):
+    board_rep = DNF_board.make_DNF(r,c)
     #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:
-        print("Writing...")
-        print(board)
-        for i in range(0,len(board),8):
-            print("tx: " + board[i:i+8])
-            v = bitstring_to_bytes(board[i:i+8],1)
+        print("Sending puzzle to FPGA...\n")
+
+        print("Rows:")
+        for constraint in r:
+            print(constraint)
+        print("\nCols:")
+        for constraint in c:
+            print(constraint)
+        for i in range(0,len(board_rep),8):
+            #print("tx: " + board_rep[i:i+8])
+            v = bitstring_to_bytes(board_rep[i:i+8],1)
             ser.write(v)
-            #time.sleep(.01)
         return
     except Exception as e:
         print(e)
         ser.close()
 
 def main():
-    print("hello")
     connection = connect()
 
+    method = get_input_method()
+
     index = 0
-    tx(connection, index)
-    rx(connection)
-    """ while True:
-        tx(connection, index)
-        print("board #{} sent, waiting until needed".format(index))
+    while True:
+        r,c = input_board() if method else boards[index]
+        tx(connection, r, c)
         rx(connection)
-        print("time to send")
-        index += 1 """
+        time.sleep(1)
+        index = (index+1) % len(boards)
+        input("\nEnter any character to continue (or ctrl+z to exit): ")
 
 def test_rx(input):
     board_done = False
@@ -194,8 +196,7 @@ def test_rx(input):
             count = not count
 
 if __name__ == "__main__":
-    print(input_board())
-    #main() 
+    main() 
     
     """ byt = bitstring_to_bytes("1000000000101100")
     print(type(byt))
@@ -209,8 +210,8 @@ if __name__ == "__main__":
     
 """
 2 by 2 : 
-1 0
 1 1
+0 1
 r = [[2],[1]]
 c = [[1],[2]]
 2 by 2 : 
