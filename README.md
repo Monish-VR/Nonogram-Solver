@@ -1,52 +1,38 @@
 # Nongram Solver
 parallelized nonogram solver on FPGA
 
+# Instructions 
+To run this code, run "python3 nonogram.py". You may choose to enter a board manually or use a provided, hardcoded board. 
+
+If opting to manually enter a board, please only enter solvable boards. The code can handle boards up to size 11x11.
+
+# Methodology 
+
+This code functions by transmitting boards to and from the solver using UART. The solver itself functions using a FIFO that stores rows and columns and options that would satisfy each row and each column. Over time, the code shortens the FIFO by eliminating options based on known information. Information is considered "known" when there is only a single option left for a given row or column or if each option for a given line assigns the same value for speicific cell. 
+
+The solver was originally written with a serial implementation but now also includes a parallel implementation that solves rows and columns simaltameously. 
+
+# Analysis
 
 
-**BRAM Implementation**
+# Prerequisites 
 
-BRAM width will be size of 13.
-Each slot in the BRAM will have Cell Number, Boolean Value.
-We aim to have up to 2^12 nanogram cells (represented by 12 bits) and 1 bit for Bool.
+Download pyserial. If you have an FPGA but are unable to build, feel free to simply flash out.bit to your computer to run it
 
-Bram Depth-
-Let's say we have m rows and n cols.
-The maximum # of possible solutions for each row is n for when there's only one cell to color in black-
-So for the maximum amount of slots for representing rows we need n * ( n + 1 ) 
-(Max_options * ( amount of slots per option ) )
-WLOG same applies to cols.
-The maximum amount of lines we can have is in case we have 2^x cells is 2^x + 1 (where the board is very tall and narrow)
-Therefore, BRAM depth should be 
-(2^12 + 1 ) * 2^12 = **2^24 + 2^13 + 2^12 + 2**
+# Nonograms
 
+For more infomation about nonograms, check out this wikipdeia link: https://en.wikipedia.org/wiki/Nonogram
 
-VG -
-for m rows and n cols:
-    m rows -> m * n lines (all the ands together)
-    n cols -> n * m lines
-each line has at most max(m,n) + 1 slots
-bringing the depth = 2mn * (max(m,n) + 1)
-- best case: m = n = sqrt(2^12) = 2^6 = 64
-    depth = 2(2^6)(2^6) * (2^6+1) = 2^13 * (2^6 + 1) = 2^19 + 2^13 = 532,480
-    requires 6,922,240 bits of space (fine)
-- worst case: m = 2^12 = 4096 and n = 2^0 = 1
-    depth = 2(2^12)(2^0) * (2^12 + 1) = 2^13 * (2^12 + 1) = 2^25 + 2^13 = 33,562,624
-    requires 436,314,112 bits of space (???? might be an issue)
+# Future Improvements
 
-for a 2x4
-c c c c => 4 lines
-c c c c => 4 lines
-2 2 2 2
+There are many future imporvements we could use to expand this project. 
 
-16 lines 
-each line can have at most 4 + 1 slots
-16 * 5 = 80 slots
+More specifically, we hope to explore using larger boards, further parallelizing my doing multiple rows and columns simaltameously, and being better equipped to handle unsolvable boards. 
 
-Parser- 
-to keep line index < 2^12 
+# Contributors
 
-Questions-
-Not sure why we need bram_row, braam_col, BRAM index in parser
+This code was written by Nina Gerszberg, Veronica Grant, and Dana Rubin for MIT's 6.111/6.205 course as our final project.
 
+# Acknolwedgemnts 
 
-
+Special thank you to Professor Joe Steinmeyer, TA's Fischer Moseley and Jay Lang for all the help and support they have provided. 
