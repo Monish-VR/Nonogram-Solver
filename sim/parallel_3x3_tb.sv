@@ -1,8 +1,9 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-`define status(OPT, KNOWNS, SOL) \
-$display("option: %b \n", OPT); \
+`define status(OPT1, OPT2, KNOWNS, SOL) \
+$display("option1: %b \n", OPT1); \
+$display("option2: %b \n", OPT2); \
 $display("knows: \n %b  %b  %b \n", KNOWNS[0], KNOWNS[1], KNOWNS[2]); \
 $display(" %b  %b  %b \n", KNOWNS[11], KNOWNS[12], KNOWNS[13]); \
 $display(" %b  %b  %b \n", KNOWNS[22], KNOWNS[23], KNOWNS[24]); \
@@ -28,12 +29,10 @@ module parallel_3x3_tb;
     logic solved;
     logic [120:0] known;
 
-        output logic read_from_fifo_c,
-        output logic [15:0] new_option_r,
-        output logic [15:0] new_option_c,
-        output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
-        output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
-
+    logic read_from_fifo1;
+    logic read_from_fifo2;
+    logic back_to_fifo1;
+    logic back_to_fifo2;
 
     parrallel_solver uut (
         .clk(clk),
@@ -45,15 +44,15 @@ module parallel_3x3_tb;
         .num_cols(4'd3),
         .old_options_amnt(old_options_amnt),
 
-        .read_from_fifo_c(),
-        .read_from_fifo_r(),
-        .new_option_r(new_op1),
-        .new_option_c(new_op2),
-        .put_back_to_FIFO_c()
-        .put_back_to_FIFO_r()
-        .put_back_to_FIFO(put_back_to_FIFO),  
+        .read_from_fifo_r(read_from_fifo1),
+        .read_from_fifo_c(read_from_fifo2),
+        
         .assigned(assigned),
         .known(known),
+        .new_option_r(new_op1),
+        .new_option_c(new_op2),
+        .put_back_to_FIFO_r(back_to_fifo1),  
+        .put_back_to_FIFO_c(back_to_fifo2), 
         .solved(solved)
     );
 
@@ -63,7 +62,7 @@ module parallel_3x3_tb;
     end
     initial begin
         $dumpfile("parallel_3x3.vcd");
-        $dumpvars(0, parallel_3x3.vcd);
+        //$dumpvars(0, parallel_3x3.vcd);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;
@@ -73,8 +72,8 @@ module parallel_3x3_tb;
         #10;
         rst = 0;
         started = 0;
-        old_options_amnt[0] = 2; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[0] = 2;
+        old_options_amnt[1] = 3;
         old_options_amnt[2] = 1;
         old_options_amnt[3] = 1;
         old_options_amnt[4] = 2;
@@ -99,101 +98,72 @@ module parallel_3x3_tb;
         started = 0;
         #10;
 
-        option = 0 ; //first line index 
+        option1 = 0; //first line index 
+        option2 = 3;
         valid_in = 1;
         #10;
-        `status(option,known,assigned);
-        option = 3'b110 ; //row 1 opt 1
+        `status(option1, option2, known, assigned);
+        
+        option1 = 3'b110; //row 1 opt 1
+        option2 = 3'b101;
         valid_in = 1;
         #10;
-        `status(option,known,assigned);
-        // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
-        option = 3'b011 ; //row 1 opt 2
-        valid_in = 1;
-        $display("should assign cell [0] [1] to be known");
-        #20;
-        `status(option, known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 3'b001 ; //row 2 line index
+        option1 = 3'b011 ; //row 1 opt 2
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //row 2 opt 1
+        `status(option1, option2, known, assigned);
+        
+        option2 = 4;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b010  ; //row 2 opt 2
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 2 opt 3
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 3'b010  ; //row 3 line ind (==2)
+        option1 = 1;
+        option2 = 3'b110;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        //SHOULD HAVE ONLY ONE OPTION SO ASSIGN:
-        option = 3'b101  ; //row 3 opt 1
-        valid_in = 1;
-        $display("should assign whole third row to be known");
-        #20;
-        `status(option,known,assigned);
-        // SHOULD assign whole third row to be known
+        `status(option1, option2, known, assigned);
 
-        option = 3'b011  ; //col 1 line ind 
+        option1 = 3'b100;
+        option2 = 3'b011;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b101  ; //col 1 opt 1 
-        valid_in = 1;
-        $display("should assign cells [1][0] and [2][0] to be known");
-        #20;
-        `status(option,known,assigned);
-        // should assign cells [1][0] and [2][0] to be known
+        `status(option1, option2, known, assigned);
 
-        option = 3'b100  ; //col 2 line ind 
+        option1 = 3'b010;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b110 ; //col 2 first opt
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b011 ; //col 2 2 opt
-        valid_in = 1;
-        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
-        #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        // $display("options for col 2 should be 1. opt for col 2: %b", options_amnt); DANA: need to return options if we wanna check that
-        option = 3'b101  ; //col 3 line ind 
+        option1 = 3'b001;
+        option2 = 5;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //col 3 opt 1
-        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
+        `status(option1, option2, known, assigned);
+
+        option2 = 3'b100;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b010  ; //col 3 opt 2
+        `status(option1, option2, known, assigned);
+
+        option1 = 2;
+        option2 = 3'b010;
         valid_in = 1;
-        $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
-        `status(option,known,assigned);
         #10;
-        option = 3'b001  ; //col 3 opt 3
+        `status(option1, option2, known, assigned);
+
+        option1 = 3'b101;
+        option2 = 3'b001;
         valid_in = 1;
-        #20;
-        `status(option,known,assigned);
+        #10;
+        `status(option1, option2, known, assigned);
 
+        #10;
+        
+        //ROUND 2
 
-        // $display("put this back in FIFO should be 0 but we got %b", put_back_to_FIFO);
-        $display("the assignments made to the board",assigned);//should not be totally 
-        //correct since we havent filled it, but all the spots of 1 should be correct
-
-        //round 2:
         //row 1: 110 011
         //row 2: 100 010 001
         //row 3:
@@ -201,67 +171,48 @@ module parallel_3x3_tb;
         //col 2: 011
         //col 3: 100
 
-        option = 3'b000  ; //R1
+        option1 = 0;
+        option2 = 4;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
+        `status(option1, option2, known, assigned);
 
-        option = 3'b110 ; //row 1 opt 1 - put back into FIFO
+        option1 = 3'b110;
+        option2 = 3'b011;
         valid_in = 1;
         #10;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        // $display("put this back in FIFO should be 0, put_back_to_FIFO %b", put_back_to_FIFO);
-        option = 3'b011 ; //row 1 opt 2 - conflict; remove from FIFO
+        option1 = 3'b011;
         valid_in = 1;
         #10;
-        `status(option, known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 3'b001 ; //row 2 line index
+        option2 = 5;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //row 2 opt 1 - conflict; remove from FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b010  ; //row 2 opt 2 - put back into FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b001  ; //row 2 opt 3 - conflict; remove from FIFO
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
+        `status(option1, option2, known, assigned);
 
-        option = 3'b010 ; //row 3 line index
+        option1 = 1;
+        option2 = 3'b100;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
+        `status(option1, option2, known, assigned);
 
-        option = 3'b011 ; //col 1 line index
+        option1 = 3'b100;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
+        `status(option1, option2, known, assigned);
 
-        option = 3'b100 ; //col 2 line index
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 3'b011 ; //col 2 opt 1 - last option; remove from FIFO
+        option1 = 3'b010;
         valid_in = 1;
         #10;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 3'b101 ; //col 3 line index
+        option1 = 3'b001;
         valid_in = 1;
-        `status(option,known,assigned);
         #10;
-        option = 3'b100 ; //col 3 opt 1 - last option; remove from FIFO; [0][2] and [1][2] should be known (known complete => solved)
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        valid_in = 0;
+        `status(option1, option2, known, assigned);
 
         $display("is solved? %b",solved);
         #10;

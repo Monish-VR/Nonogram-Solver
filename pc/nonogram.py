@@ -12,6 +12,9 @@ boards = [([[2],[1]], [[1],[2]]), #2x2
 
 
 def connect():
+    '''
+    connect to UART
+    '''
     s = get_usb_port()  #grab a port
     print("USB Port: "+str(s)) #print it if you got
 
@@ -32,19 +35,25 @@ def connect():
     return ser
 
 def bitstring_to_bytes(input_str,num):
+    '''
+    convert bitstring to bytes
+    '''
     input_int = int(input_str, 2)
     bit_byte = input_int.to_bytes(num,'big')
-    #print(bit_byte.hex())
     return bit_byte
 
 def byte_to_bitstring(input_bytes):
+    '''
+    convert byte to bitstring
+    '''
     input_int = int.from_bytes(input_bytes,"big")#int(input_bytes.hex(),16)
-    #print(input_int)
     bit_str = format(input_int, '08b')
-    #print(bit_str)
     return bit_str
 
 def display_board(board,m,n):
+    '''
+    display solved board
+    '''
     print("SOLUTION ({}x{}):".format(m,n))
     for x in range(m):
         for y in range(n):
@@ -54,6 +63,9 @@ def display_board(board,m,n):
     return
 
 def rx(ser):
+    '''
+
+    '''
     board_done = False
     board = []
     m = 0
@@ -71,10 +83,6 @@ def rx(ser):
                 else:
                     msg = buffer + byte_to_bitstring(data)
                     flag = msg[:3] #first 3 bits are the flag
-                    """ print("msg: " + msg)
-                    print("flag: " + flag)
-                    print("index: " + msg[3:15])
-                    print("value: " + msg[15]) """
                     if flag == msg_flags['start']:
                         if m == 0:
                             m = int(msg[3:15],2)
@@ -97,6 +105,9 @@ def rx(ser):
     return
 
 def get_input_method():
+    '''
+    allow used to pick between hardcoded board or manual entry
+    '''
     input_method = input("Do you want to manually input boards (Y) or use pre-coded boards (N)? ").upper()
     while input_method != 'Y' and input_method != 'N':
         print("Please enter 'Y' or 'N'.")
@@ -105,6 +116,9 @@ def get_input_method():
     return input_method == 'Y'
 
 def input_board():
+    '''
+    parse user input into board format
+    '''
     row_amnt = input("how many rows do you have? ")
     col_amnt = input("how many columns do you have? ")
     rows_info = []
@@ -114,17 +128,19 @@ def input_board():
     for row in range(int(row_amnt)):
         q = "tell me contraints of row " + str(row) + ": "
         constraints = input(q)
-        rows_info.append(constraints.split())
+        cnstrts = constraints.split()
+        rows_info.append([int(x) for x in cnstrts])
     for col in range(int(col_amnt)):
         q = "tell me contraints of col " + str(col) + ": "
         constraints = input(q)
-        cols_info.append(constraints.split())
+        cnstrts = constraints.split()
+        cols_info.append([int(x) for x in cnstrts])
     return rows_info,cols_info
 
-
 def tx(ser, r,c):
+    '''
+    '''
     board_rep = DNF_board.make_DNF(r,c)
-    #c = DNF_board.make_serial(2,2,[[[(0, 1), (1, 1)]], [[(2, 1), (3, 0)], [(2, 0), (3, 1)]], [[(0, 1), (2, 0)], [(0, 0), (2, 1)]], [[(1, 1), (3, 1)]]])
     try:
         print("\nSending puzzle to FPGA...\n")
 
@@ -144,6 +160,9 @@ def tx(ser, r,c):
         ser.close()
 
 def main():
+    '''
+    call helpers to do all the pre-seolver preprocessing
+    '''
     connection = connect()
 
     method = get_input_method()
@@ -175,7 +194,6 @@ def test_rx(input):
     i = 0
     while not board_done:
         data = input[i:i+8]
-        #print(data)
         print(count)
         data = int(data, 2)
         data = data.to_bytes(1,'big')
@@ -185,11 +203,6 @@ def test_rx(input):
                 buffer = byte_to_bitstring(data)
             else:
                 msg = buffer + byte_to_bitstring(data)
-                # print(msg)
-                # print(type(msg))
-                # print(len(msg))
-                # print(msg[:3])
-                # print("end")
                 flag = msg[:3]
                 if flag == msg_flags['start']:
                     if m == 0:

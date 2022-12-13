@@ -1,8 +1,9 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-`define status(OPT, KNOWNS, SOL) \
-$display("option: %b \n", OPT); \
+`define status(OPT1, OPT2, KNOWNS, SOL) \
+$display("option1: %b \n", OPT1); \
+$display("option2: %b \n", OPT2); \
 $display("knows: \n %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", KNOWNS[0], KNOWNS[1], KNOWNS[2], KNOWNS[3], KNOWNS[4], KNOWNS[5], KNOWNS[6], KNOWNS[7], KNOWNS[8], KNOWNS[9], KNOWNS[10]); \
 $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", KNOWNS[11], KNOWNS[12], KNOWNS[13], KNOWNS[14], KNOWNS[15], KNOWNS[16], KNOWNS[17], KNOWNS[18], KNOWNS[19], KNOWNS[20], KNOWNS[21]); \
 $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", KNOWNS[22], KNOWNS[23], KNOWNS[24], KNOWNS[25], KNOWNS[26], KNOWNS[27], KNOWNS[28], KNOWNS[29], KNOWNS[30], KNOWNS[31], KNOWNS[32]); \
@@ -27,20 +28,26 @@ $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", SOL[99], SOL[100], SO
 $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", SOL[110], SOL[111], SOL[112], SOL[113], SOL[114], SOL[115], SOL[116], SOL[117], SOL[118], SOL[119], SOL[120]); \
 
 module parallel_11x11_tb;
+
     logic clk;
     logic rst;
     logic started;
-    logic [15:0] new_op;
+    logic [15:0] new_op1;
+    logic [15:0] new_op2;
     logic [15:0] option1;
     logic [15:0] option2;
     logic valid_in;
     logic next;
-    logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
-    logic [120:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
-    logic put_back_to_FIFO;  //boolean- do we need to push to fifo
+    logic [21:0] [6:0] old_options_amnt;
+    logic [120:0] assigned; 
+    logic put_back_to_FIFO; 
     logic solved;
     logic [120:0] known;
 
+    logic read_from_fifo1;
+    logic read_from_fifo2;
+    logic back_to_fifo1;
+    logic back_to_fifo2;
 
     parrallel_solver uut (
         .clk(clk),
@@ -52,15 +59,15 @@ module parallel_11x11_tb;
         .num_cols(4'd11),
         .old_options_amnt(old_options_amnt),
 
-        .read_from_fifo_c(),
-        .read_from_fifo_r(),
-        .new_option_r(new_op1),
-        .new_option_c(new_op2),
-        .put_back_to_FIFO_c()
-        .put_back_to_FIFO_r()
-        .put_back_to_FIFO(put_back_to_FIFO),  
+        .read_from_fifo_r(read_from_fifo1),
+        .read_from_fifo_c(read_from_fifo2),
+        
         .assigned(assigned),
         .known(known),
+        .new_option_r(new_op1),
+        .new_option_c(new_op2),
+        .put_back_to_FIFO_r(back_to_fifo1),  
+        .put_back_to_FIFO_c(back_to_fifo2), 
         .solved(solved)
     );
 
@@ -70,7 +77,6 @@ module parallel_11x11_tb;
     end
     initial begin
         $dumpfile("parallel_11x11.vcd");
-        $dumpvars(0, parallel_11x11);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;
@@ -119,7 +125,8 @@ module parallel_11x11_tb;
 
         $display("just started");
       
-        option = 0 ; //first line index 
+        option1 = 0; //first line index
+        option2 = 11;
         valid_in = 1;
         old_options_amnt[0] = 1; 
         old_options_amnt[1] = 1; 
@@ -148,203 +155,125 @@ module parallel_11x11_tb;
         #10;
         started = 0;
         #10;
-        `status(option,known,assigned);
+        `status(option1, option2 ,known,assigned);
         #10;
-        option = 11'b11111111111; //row 1 opt 1
+        option1 = 11'b11111111111; //row 1 opt 1
+        option2 = 11'b11111111111; //col 1 opt 1
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2 ,known,assigned);
 
-        option = 1; //row 2 line index
+        option1 = 1; //row 2 line index
+        option2 = 12; //col 2 line index
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known,assigned);
         #10;
-        option = 11'b10111111101; //row 3 opt 1
+        option1 = 11'b10111111101; //row 3 opt 1
+        option2 = 11'b10111111101;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);        
+        `status(option1, option2, known,assigned);        
 
-        option = 2; //row 3 line ind (==2)
+        option1 = 2; //row 3 line ind (==2)
+        option2 = 13;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known,assigned);
         #10;
-        option = 11'b11011111011; //row 3 opt 1
+        option1 = 11'b11011111011; //row 3 opt 1
+        option2 = 11'b11011111011;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known,assigned);
 
-        option = 3; //row 4 line ind 
+        option1 = 3; //row 4 line ind 
+        option2 = 14;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known,assigned);
         #10;
-        option = 11'b11101110111; //row 4 opt 1 
+        option1 = 11'b11101110111; //row 4 opt 1 
+        option2 = 11'b11101110111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         // should assign cells [1][0] and [2][0] to be known
 
-        option = 4; //row 5 line ind
+        option1 = 4; //row 5 line ind
+        option2 = 15;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2,known, assigned);
         #10;
-        option = 11'b11110101111 ; //row 5 first opt
+        option1 = 11'b11110101111; //row 5 first opt
+        option2 = 11'b11110101111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 5; //row 6 line ind 
+        option1 = 5; //row 6 line ind 
+        option2 = 16;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b11111011111; //row 6 opt 1
+        option1 = 11'b11111011111; //row 6 opt 1
+        option2 = 11'b11111011111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 6; //row 7 line ind 
+        option1 = 6; //row 7 line ind 
+        option2 = 17;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b11110101111 ; //row 7 opt 1
+        option1 = 11'b11110101111; //row 7 opt 1
+        option2 = 11'b11110101111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 7  ; //row 8 line ind 
+        option1 = 7  ; //row 8 line ind 
+        option2 = 18;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b11101110111 ; //row 8 opt 1
+        option1 = 11'b11101110111; //row 8 opt 1
+        option2 = 11'b11101110111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 8; //row 9 line ind 
+        option1 = 8; //row 9 line ind 
+        option2 = 19;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b11011111011; //row 9 opt 1
+        option1 = 11'b11011111011; //row 9 opt 1
+        option2 = 11'b11011111011;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 9; //row 10 line ind 
+        option1 = 9; //row 10 line ind
+        option2 = 20;
+ 
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b10111111101; //row 10 opt 1
+        option1 = 11'b10111111101; //row 10 opt 1
+        option2 = 11'b10111111101;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
 
-        option = 10; //row 11 line ind 
+        option1 = 10; //row 11 line ind 
+        option2 = 21;
         valid_in = 1;
-        `status(option,known,assigned);
+        `status(option1, option2, known, assigned);
         #10;
-        option = 11'b11111111111; //row 1 1opt 1
+        option1 = 11'b11111111111; //row 1 1opt 1
+        option2 = 11'b11111111111;
         valid_in = 1;
         #20;
-        `status(option,known,assigned);
-
-        option = 11; //col 1 line index
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11111111111; //col 1 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned); 
-
-        option = 12; //col 2 line index
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b10111111101; //col 2 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);        
-
-        option = 13; //col 3 line ind (==2)
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11011111011; //col 3 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 14; //col 4 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11101110111; //col 4 opt 1 
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 15; //col 5 line ind
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11110101111 ; //col 5 first opt
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 16; //col 6 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11111011111; //col 6 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 17; //col 7 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11110101111 ; //col 7 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 18; //col 8 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11101110111 ; //col 8 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 19; //col 9 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11011111011; //col 9 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 20; //col 10 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b10111111101; //col 10 opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-
-        option = 21; //col 11 line ind 
-        valid_in = 1;
-        `status(option,known,assigned);
-        #10;
-        option = 11'b11111111111; //col 1 1opt 1
-        valid_in = 1;
-        #20;
-        `status(option,known,assigned);
-       
+        `status(option1, option2, known, assigned);
 
         $display("is solved? %b",solved);
         #10;

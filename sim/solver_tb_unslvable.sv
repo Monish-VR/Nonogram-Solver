@@ -9,11 +9,7 @@ $display(" %b  %b  %b \n", KNOWNS[22], KNOWNS[23], KNOWNS[24]); \
 $display("sol: \n %b  %b  %b \n", SOL[0], SOL[1], SOL[2]); \
 $display(" %b  %b  %b \n", SOL[11], SOL[12], SOL[13]); \
 $display(" %b  %b  %b \n", SOL[22], SOL[23], SOL[24]); 
-// $display(" %b  %b  %b \n", KNOWNS);
 
-// $display("\n");
-// $display("option", option);
-// $display("\n");
 
 module solver_tb_2;
 
@@ -76,8 +72,8 @@ module solver_tb_2;
         $display("just started");
         started = 1;
         valid_in = 1;
-        old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[0] = 3; 
+        old_options_amnt[1] = 3; 
         old_options_amnt[2] = 1;
         old_options_amnt[3] = 1;
         old_options_amnt[4] = 3;
@@ -269,9 +265,6 @@ module solver_tb_2;
 
 
         $display("is solved? %b",solved);
-        //ask about how to print out all the assignments
-        // $display("the amount of options left sohuld be 0 but is %b", options_amnt);
-        // $display("valid out sohuld be 1 but is %b", valid_out);
 
         #10
         $display("Finishing Sim");

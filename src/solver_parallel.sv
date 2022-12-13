@@ -1,11 +1,6 @@
 
 `timescale 1ns / 1ps
 `default_nettype none
-//assuming line index starts at 0
-
-//packed arrays give the values the opposite way from what we expect, so array of 3X3, 
-//when we call array[0] it will give the last 3 bits
-
 
 //NOTE: this will not work with an unsolvable board. Always1 and always0 may contradict and then you will try to write 
 // two different values to the same location in assigned. Unsure what iverilog would do but would be bad
@@ -52,9 +47,7 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index1, new_index1;
     logic [2:0][$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index2, new_index2;
     logic [$clog2(MAX_ROWS * MAX_COLS) - 1:0]  base_index1, base_index2, sol_index;
-    logic row1, row2,first1, first2;
-    assign row1 = line_index1[0] < num_rows;
-    assign row2 = line_index2[0] < num_rows;
+    logic first1, first2;
     logic valid_in_simplify;
 
     logic [$clog2(MAX_NUM_OPTIONS) - 1:0] options_left1; //options left to get from the fifo
@@ -74,18 +67,16 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
     logic [LARGEST_DIM-1:0] curr_assign2; //one line input of assigned input to simplify
     logic [LARGEST_DIM-1:0] curr_known2; //one line input of known input to simplif
 
-
-
     logic [LARGEST_DIM-1:0] always1_1;// a and b
     logic [LARGEST_DIM-1:0] always0_1;
     logic [LARGEST_DIM-1:0] always1_2;// a and b
     logic [LARGEST_DIM-1:0] always0_2;
+
     logic [MAX_COLS-1:0] cols_all_known;
     logic [$clog2(MAX_COLS) - 1:0] num_known_cols;
 
     logic  [(MAX_ROWS * MAX_COLS) - 1:0] known_t; //transpose
     logic  [(MAX_ROWS * MAX_COLS) - 1:0] assigned_t; //transpose
-
 
     //TRANSPOSING:
     genvar m; //rows
@@ -101,20 +92,10 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
 
     always_comb begin
         //gets relevant line from assigned and known
-        if (row1) begin
-            curr_assign1 = assigned[MAX_COLS*new_index1 +: MAX_COLS];
-            curr_known1 = known[MAX_COLS*new_index1 +: MAX_COLS];
-        end else begin
-            curr_assign1 = assigned_t[MAX_ROWS*(new_index1 - num_rows) +: MAX_ROWS];
-            curr_known1 = known_t[MAX_ROWS*(new_index1 - num_rows) +: MAX_ROWS];
-        end
-        if (row2) begin
-            curr_assign2 = assigned[MAX_COLS*new_index2 +: MAX_COLS];
-            curr_known2 = known[MAX_COLS*new_index2 +: MAX_COLS];
-        end else begin
-            curr_assign2 = assigned_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
-            curr_known2 = known_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
-        end
+        curr_assign1 = assigned[MAX_COLS*new_index1 +: MAX_COLS];
+        curr_known1 = known[MAX_COLS*new_index1 +: MAX_COLS];
+        curr_assign2 = assigned_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
+        curr_known2 = known_t[MAX_ROWS*(new_index2 - num_rows) +: MAX_ROWS];
         
         cols_all_known = '1;
         num_known_cols = 0;
@@ -154,7 +135,9 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
             new_option_c<= '0;
             put_back_to_FIFO_r<=0;
             put_back_to_FIFO_c<=0;    
-        end else begin
+        end else 
+        //if we are only treating this as the 2-FIFO case (one with rows and one with columns),
+        // we can simplify the row column logic
             case(state1)
                 IDLE: begin
                     if (started)begin
@@ -220,36 +203,17 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                 WRITE: begin
                     read_from_fifo_r <= 0;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
-                    if (row1) begin
-                        base_index1 = MAX_COLS*line_index1[1];
-                        for(integer i = 0; i < MAX_COLS; i = i + 1) begin
-                            if(i < num_cols) begin
-                                if (always1_1[i] == 1) begin 
-                                    known[base_index1 + i] <= 1;
-                                    assigned[base_index1+ i] <= 1;
-                                end
-                                if (always0_1[i] == 1) begin 
-                                    known[base_index1 + i] <= 1; 
-                                    assigned[base_index1 + i] <= 0;
-                                end
+                    base_index1 = MAX_COLS*line_index1[1];
+                    for(integer i = 0; i < MAX_COLS; i = i + 1) begin
+                        if(i < num_cols) begin
+                            if (always1_1[i] == 1) begin 
+                                known[base_index1 + i] <= 1;
+                                assigned[base_index1+ i] <= 1;
                             end
-                        end
-                    end else begin
-                        base_index1 = (line_index1[1] - num_rows);
-                        for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
-                            // I think the row we indexing into is j
-                            //and the column is line index-size
-                            if(j < num_rows) begin
-                                if (always1_1[j]) begin 
-                                    known[base_index1] <= 1; 
-                                    assigned[base_index1] <= 1;
-                                end
-                                if (always0_1[j]) begin 
-                                    known[base_index1] <= 1; 
-                                    assigned[base_index1] <= 0;
-                                end
+                            if (always0_1[i] == 1) begin 
+                                known[base_index1 + i] <= 1; 
+                                assigned[base_index1 + i] <= 0;
                             end
-                            base_index1 += MAX_COLS;
                         end
                     end
                     state1 <= NEXT_LINE_INDEX;
@@ -260,12 +224,8 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                 IDLE: begin
                     if (started)begin
                         read_from_fifo_c <= 1;
-                        // options_amnt <= old_options_amnt; //did it in state 1
                         state2 <= NEXT_LINE_INDEX;
-                        // known <= 0; //did it in state 1
-                        // assigned <= 0;//did it in state 1
                     end
-                    // solved <= 0;//did it in state 1
                     first2 <= 1;
                 end
                 NEXT_LINE_INDEX: begin
@@ -321,43 +281,25 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                 WRITE: begin
                     read_from_fifo_c <= 1;
                     // check if specific bits of always1 or always0 are 1, if so assign it to known and assigned accordingly
-                    if (row2) begin
-                        base_index2 = MAX_COLS*line_index2[1];
-                        for(integer i = 0; i < MAX_COLS; i = i + 1) begin
-                            if(i < num_cols) begin
-                                if (always1_2[i] == 1) begin 
-                                    known[base_index2 + i] <= 1;
-                                    assigned[base_index2 + i] <= 1;
-                                end
-                                if (always0_1[i] == 1) begin 
-                                    known[base_index2 + i] <= 1; 
-                                    assigned[base_index2 + i] <= 0;
-                                end
+                    base_index2 = (line_index2[1] - num_rows);
+                    for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
+                        if(j < num_rows) begin
+                            if (always1_2[j]) begin 
+                                known[base_index2] <= 1; 
+                                assigned[base_index2] <= 1;
+                            end
+                            if (always0_2[j]) begin 
+                                known[base_index2] <= 1; 
+                                assigned[base_index2] <= 0;
                             end
                         end
-                    end else begin
-                        base_index2 = (line_index2[1] - num_rows);
-                        for(integer j = 0; j < MAX_ROWS; j = j + 1) begin
-                            // I think the row we indexing into is j
-                            //and the column is line index-size
-                            if(j < num_rows) begin
-                                if (always1_2[j]) begin 
-                                    known[base_index2] <= 1; 
-                                    assigned[base_index2] <= 1;
-                                end
-                                if (always0_2[j]) begin 
-                                    known[base_index2] <= 1; 
-                                    assigned[base_index2] <= 0;
-                                end
-                            end
-                            base_index2 += MAX_COLS;
-                        end
+                        base_index2 += MAX_COLS;
                     end
                     state2 <= NEXT_LINE_INDEX;
                     put_back_to_FIFO_c <= 0;
                 end
             endcase
-        end
+        //end
         //pipelining
         state_prev1 <= state1;
         if(state_prev1 != state1)begin
