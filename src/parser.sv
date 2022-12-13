@@ -13,7 +13,8 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
         output logic [$clog2(MAX_ROWS) - 1:0] m,
         output logic [$clog2(MAX_COLS) - 1:0] n,
-        output logic [2:0] flag
+        output logic [2:0] flag,
+        output logic  row
     );
 
     /*
@@ -33,7 +34,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         
     logic count;
     logic first;
-    logic row;
+    // logic row;
     logic [7:0] buffer;
     logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index;
 

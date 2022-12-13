@@ -41,6 +41,7 @@ module top_level (
     logic clk_50mhz;
     logic [2:0] flag;
     logic fifo_rst;
+    logic row; //are we still recieving rows from parser
 
     assign stat = {state, (fifo_empty_r & fifo_empty_c)};
     assign rst = btnc;
@@ -76,6 +77,7 @@ module top_level (
         .n(n[0]),
         .m(m[0]),
         .flag(flag)
+        .row(row)
     );
 
 
@@ -187,8 +189,7 @@ module top_level (
 logic fifo_write_r,fifo_write_c, solve_next_r,solve_next_c;
 logic [15:0] fifo_in_c,fifo_in_r, fifo_out_r,fifo_out_c, solve_line_r, solve_line_c;
 logic fifo_empty_r,fifo_empty_c, fifo_full_r, fifo_full_c;
-logic finished_rows; //are we still recieving rows from parser
-logic [$clog2(MAX_NUM_OPTIONS * MAX_COLS) - 1:0]row_counter ; 
+logic [$clog2(MAX_NUM_OPTIONS * MAX_COLS) - 1:0] row_counter ; 
 
 //////// TO COMPLETE- how to get number of total entries to fifo r- all the rows indices and all the rows options
 // and then assign when finished_rows = 1 or 0
@@ -197,7 +198,7 @@ logic [$clog2(MAX_NUM_OPTIONS * MAX_COLS) - 1:0]row_counter ;
 
 always_comb begin
     if (state == RECEIVE) begin
-        if (~finished_rows) begin
+        if (row) begin
             fifo_write_r = parse_write;
             fifo_in_r = parse_line;
             fifo_write_c = 0;
