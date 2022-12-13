@@ -237,7 +237,7 @@ module parrallel_solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, para
                         put_back_to_FIFO_c <= 0;
                     end else begin
                         if(!first2) options_amnt[line_index2[2]] <= net_valid_opts2;
-                        if (options_amnt[option_r] > 0) begin
+                            if (options_amnt[option_c] > 0) begin
                             state2 <= (options_amnt[option_c]==0)? NEXT_LINE_INDEX : (options_amnt[option_c] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         options_left2 <= options_amnt[option_c];
