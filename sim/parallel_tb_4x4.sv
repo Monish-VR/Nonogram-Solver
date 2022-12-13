@@ -12,7 +12,7 @@ $display(" %b  %b  %b  %b \n", SOL[11], SOL[12], SOL[13], SOL[14]); \
 $display(" %b  %b  %b  %b \n", SOL[22], SOL[23], SOL[24], SOL[25]); \
 $display(" %b  %b  %b  %b \n", SOL[33], SOL[34], SOL[35], SOL[36]); 
 
-module solver_parallel_tb_4x4;
+module parallel_tb_4x4;
 
     logic clk;
     logic rst;
@@ -59,7 +59,7 @@ module solver_parallel_tb_4x4;
     end
     initial begin
         $dumpfile("solver4p.vcd");
-        $dumpvars(0, solver_parallel_tb_4x4);
+        $dumpvars(0, parallel_tb_4x4);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;

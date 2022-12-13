@@ -26,7 +26,7 @@ $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", SOL[88], SOL[89], SOL
 $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", SOL[99], SOL[100], SOL[101], SOL[102], SOL[103], SOL[104], SOL[105], SOL[106], SOL[107], SOL[108], SOL[109]); \
 $display(" %b  %b  %b  %b  %b  %b  %b  %b  %b  %b  %b \n", SOL[110], SOL[111], SOL[112], SOL[113], SOL[114], SOL[115], SOL[116], SOL[117], SOL[118], SOL[119], SOL[120]); \
 
-module solver_tb_11b_11;
+module solver_tb_11x11;
     logic clk;
     logic rst;
     logic started;
@@ -63,8 +63,8 @@ module solver_tb_11b_11;
         clk = !clk;
     end
     initial begin
-        $dumpfile("solver_tb_11b_11.vcd");
-        $dumpvars(0, solver_tb_11b_11);
+        $dumpfile("solver_tb_11x11.vcd");
+        $dumpvars(0, solver_tb_11x11);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;

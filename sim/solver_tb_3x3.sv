@@ -10,7 +10,7 @@ $display("sol: \n %b  %b  %b \n", SOL[0], SOL[1], SOL[2]); \
 $display(" %b  %b  %b \n", SOL[11], SOL[12], SOL[13]); \
 $display(" %b  %b  %b \n", SOL[22], SOL[23], SOL[24]); 
 
-module solver_tb_33_on_11;
+module solver_tb_3x3;
 
     logic clk;
     logic rst;
@@ -48,8 +48,8 @@ module solver_tb_33_on_11;
         clk = !clk;
     end
     initial begin
-        $dumpfile("solver_33_on_11.vcd");
-        $dumpvars(0, solver_tb_33_on_11);
+        $dumpfile("solver_3x3.vcd");
+        $dumpvars(0, solver_tb_3x3);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;
