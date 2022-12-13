@@ -91,34 +91,6 @@ module solver_parallel_tb_4x4;
         // 1 0 1 0
         // 1 0 1 1
 
-        //row 1: 0011 0110 1100
-        //row 2: 0011 0110 1100
-        //row 3: 1010 0101 1001
-        //row 4: 1101 
-        //col 1: 1110 0111
-        //col 2: 1000 0100 0010 0001
-        //col 3: 1101 
-        //col 4: 1010 0101 1001
-
-//ROUND 2:
-        //row 1: 0011 0110 1100
-        //row 2: 0011 0110 1100
-        //row 3: 1010 0101 1001
-        //row 4: 
-        //col 1: 1110 
-        //col 2: 0100 0010 0001
-        //col 3: 
-        //col 4: 1010  1001
-
-//ROUND 3:
-        //row 1: 0110 1100
-        //row 2: 0011 
-        //row 3: 0101 1001
-        //row 4: 
-        //col 1: 1110 
-        //col 2: 0100 0010 0001
-        //col 3: 
-        //col 4: 1010  1001
 
         $display("just started");
         started = 1;
@@ -151,6 +123,7 @@ module solver_parallel_tb_4x4;
         #10;
         //COL 2
         `status(option_r,known,assigned);
+        $display("col 1 middle 2 cells should be assigned");
         option_c = 4'b0101; //C2 ind
         #10;
         `status(option_r,known,assigned);
@@ -171,6 +144,7 @@ module solver_parallel_tb_4x4;
         #10; // no column or row here since were done with col 2 and row 2
         #10;
         `status(option_r,known,assigned);
+        $display("should assign row 2");
         option_r = 4'b0010; //row 3 index
         option_c = 4'b0110; //col 3 index
         #10
@@ -182,6 +156,7 @@ module solver_parallel_tb_4x4;
         option_r = 4'b1001; //row 3 op2
         #10; 
         `status(option_r,known,assigned);
+        $display("should assign col3");
         option_r = 4'b0101; //row 3 op3
         option_c = 4'b0111; //col 4 index
         #10;// no row here since we're done w r3
@@ -198,6 +173,7 @@ module solver_parallel_tb_4x4;
         #10;//no row cuz were done w r4 and c4
                 //ROUND 2:
         #10;
+        $display("should assign row 4 and first cell on col 4");
         `status(option_r,known,assigned);
         option_r = 0 ; //ro1 line index 
         option_c = 4'b0100; //C1 ind
@@ -209,43 +185,50 @@ module solver_parallel_tb_4x4;
         #10;
         `status(option_r,known,assigned);
         option_r = 4'b0110 ; //ro1 op2
-        #10;
+        option_c = 4'b0111; //C1 op2
+        #10; //no col:
         `status(option_r,known,assigned);
         option_r = 4'b1100 ; //ro1 op3
-        option_c = 4'b0101; //C2 ind
         //no row:
         #10;
         `status(option_r,known,assigned);
-        option_c = 4'b0100; //C2 op1
+        $display("should assign all of col 1");
+        option_c = 4'b0101; //C2 ind
         #10;
         `status(option_r,known,assigned);
+        $display("should assign all of row 1");
         option_r = 4'b0001 ; //R2 ind
-        option_c = 4'b0010; //C2 op2
+        option_c = 4'b1000; //C2 op1
         #10;
         `status(option_r,known,assigned);
         option_r = 4'b0011 ; //R2 op1
+        option_c = 4'b0100; //C2 op2
+        //no row
+        #10;
+        `status(option_r,known,assigned);
         option_c = 4'b0010; //C2 op3
         #10;
         `status(option_r,known,assigned);
-        option_r = 4'b0110 ; //R2 op2
+        option_r = 4'b0010 ; //R3 index
         option_c = 4'b0001; //C2 op4
         //no col
         #10;
         `status(option_r,known,assigned);
-        option_r = 4'b1100 ; //R2 op3
-        //no row:
+        option_r = 4'b1001 ; //R3 op1
+        // no row
         #10;
         `status(option_r,known,assigned);
+        option_r = 4'b0101 ; //R3 op2
         option_c = 4'b0110 ; //C3 index
-        //no column
+        //no row no col
+        #10;
         #10;
         `status(option_r,known,assigned);
-        option_r = 4'b0010 ; //R3 ind
-        #10;
-        `status(option_r,known,assigned);
-        option_r = 4'b1010 ; //R3 op1
+        $display("should assign everything");
+        option_r = 4'b1010 ; //R4 ind
         option_c = 4'b0111; //C4 ind
         #10;
+        /*
         `status(option_r,known,assigned);
         option_r = 4'b1001 ; //R3 op2
         option_c = 4'b1010; //C4 op1
@@ -258,160 +241,9 @@ module solver_parallel_tb_4x4;
         `status(option_r,known,assigned);
         option_r =4'b0101; //R3 op 3
 
-
-        $display("DONE WITH ROW 2 should not know anything");
-/*
-
-0 - 1 -
-1 - 0 -
-1 - 1 0
-1 0 1 1
-
-//ROUND 2:
-
-
-//ROW 2 ROUND 2:
-
-        `status(option,known,assigned);
-        
-        option = 4'b0011; //row 2 opt 1  
-        #10;
-        `status(option,known,assigned);
-        option = 4'b0110; //row 2 opt 2
-        #10;
-        `status(option,known,assigned);
-        option = 4'b1100; //row 2 opt 3
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH ROW 2 should not know anything");
-// ROW 3 ROUND 2:
-        option = 4'b0010; //R3 ind
-        #10;
-        `status(option,known,assigned);
-        
-        option = 4'b1010; //R3 op1
-        #10;
-        `status(option,known,assigned);
-        option = 4'b1001; //R3 op2
-        #10;
-        `status(option,known,assigned);
-        option = 4'b0101; //R3 op3
-        #20;
-        `status(option,known,assigned);
-        $display("DONE WITH ROW 3 should not know anything");
-
-// /ROW 4 ROUND 2:
-        option = 4'b0011; //R4 ind
-
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH ROW 4 round 2 should assign it");
-
-
-
-//COL 2 ROUND 2:
-
-        `status(option,known,assigned);
-        option = 4'b0010; //C2 op3
-        #10;
-        `status(option,known,assigned);
-        option = 4'b0001; //C2 op4
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH COL 2 , should assign it");
-
-//COL 3 ROUND 2:
-        $display("col 3: 1 option");
-        option = 4'b0110; //C3 ind
-
-        #20;
-        `status(option,known,assigned);
-//COL 4 Round 2:
-        option = 4'b0111; //C4 ind
-        #10
-        `status(option,known,assigned);
-        option = 4'b1010; //C4 op1
-        #10;
-        `status(option,known,assigned);
-        option = 4'b1001; //C4 op2
-        #20;
-        `status(option,known,assigned);
-        $display("DONE with round 2 SHOULD ASSIGN EVERYTHING");
-
-//ROUND 3:
-//ROW 1 ROUND 3:
-        option = 0 ; //first line index 
-        #10;
-        option = 4'b0110; //row 1 opt 2
-        #10;
-        `status(option,known,assigned);
-        option = 4'b1100; //row 1 opt 3
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH ROW 1 should not know anything");
-
-        option = 4'b0001; //row 2 line index
-        #10;
-        `status(option,known,assigned);
-        option = 4'b0011; //row 2 opt 1  
-        #20;
-        `status(option,known,assigned);
-
+*/
         $display("DONE WITH ROW 2 should not know anything");
 
-// ROW 3 ROUND 3:
-        option = 4'b0010; //R3 ind
-        #10;
-        `status(option,known,assigned);
-        option = 4'b0101; //R3 op3
-        #20;
-        `status(option,known,assigned);
-        $display("DONE WITH ROW 3 should not know anything");
-
-// /ROW 4 ROUND 2:
-        option = 4'b0011; //R4 ind
-
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH ROW 4 round 2 should assign it");
-
-//COL 1ROUND 3:
-        option = 4'b0100; //C3
-
-        #20;
-        `status(option,known,assigned);
-//COL 2 ROUND 3:
-        option = 4'b0101; //C2 ind
-        #10;
-
-        `status(option,known,assigned);
-        option = 4'b0010; //C2 op3
-        #20;
-        `status(option,known,assigned);
-
-        $display("DONE WITH COL 2 , should assign it");
-
-//COL 3 ROUND 3:
-        $display("col 3: 1 option");
-        option = 4'b0110; //C3 ind
-
-        #20;
-        `status(option,known,assigned);
-
-//COL 4 Round 3:
-        option = 4'b0111; //C4 ind
-        #10
-        `status(option,known,assigned);
-        option = 4'b1001; //C4 op2
-        #20;
-        `status(option,known,assigned);
-        $display("DONE SHOULD ASSIGN EVERYTHING");
-#2000
 */
         #10
         $display("Finishing Sim");
