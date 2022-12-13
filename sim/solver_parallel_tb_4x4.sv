@@ -242,9 +242,7 @@ module solver_parallel_tb_4x4;
         option_r =4'b0101; //R3 op 3
 
 */
-        $display("DONE WITH ROW 2 should not know anything");
 
-*/
         #10
         $display("Finishing Sim");
         $finish;
