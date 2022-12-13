@@ -46,12 +46,8 @@ module top_level (
     assign rst = btnc;
     assign fifo_rst = rst || solved;
     assign bits = display_value;
-    //veronica its beautiful.. ^o^
     assign fifo_write = (state == RECEIVE)? parse_write : solve_write;
     assign fifo_in = (state == RECEIVE)? parse_line : solve_line;
-    //assign tx = 1;
-    //assign next_line =  solve_next;
-    //assign stat[2] = fifo_empty;
 
     clk_wiz_50 divider (
         .clk_in1(clk_100mhz),
@@ -140,58 +136,6 @@ module top_level (
         .solved(solved) // board is 
     );
 
-
-//FOR PARALLEL:
-/*
-    logic fifo_write_r,fifo_write_c, solve_next_r,solve_next_c;
-    logic [15:0] fifo_in_c,fifo_in_r, fifo_out_r,fifo_out_c;
-    logic fifo_empty_r,fifo_empty_c, fifo_full_r, fifo_full_c;
-
-    fifo_11_by_11 fifo_r (
-        .clk(clk_50mhz),               // input wire clk
-        .srst(rst),                    // input wire rst
-        .din(fifo_in_r),                 // input wire [15 : 0] din
-        .wr_en(fifo_write_r),            // input wire wr_en
-        .rd_en(solve_next_r),            // input wire rd_en
-        .dout(fifo_out_r),               // output wire [15 : 0] dout
-        .full(fifo_full_r),              // output wire full
-        .empty(fifo_empty_r)             // output wire empty
-    );
-
-        fifo_11_by_11 fifo_c (
-        .clk(clk_50mhz),               // input wire clk
-        .srst(rst),                    // input wire rst
-        .din(fifo_in_c),                 // input wire [15 : 0] din
-        .wr_en(fifo_write_c),            // input wire wr_en
-        .rd_en(solve_next_c),            // input wire rd_en
-        .dout(fifo_out_c),               // output wire [15 : 0] dout
-        .full(fifo_full_c),              // output wire full
-        .empty(fifo_empty_c)             // output wire empty
-    );
-
-    solver sol (
-        //TODO: confirm sizes for everything
-        .clk(clk_50mhz),
-        .rst(rst),
-        .started(parsed), //indicates board has been parsed, ready to solve
-        .option_r(fifo_out_r),
-        .option_c(fifo_out_c),
-        .num_rows(m[1]),
-        .num_cols(n[1]),
-        //May have to divide this:
-        .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
-        //Taken from the BRAM in the top level- how many options for this line
-        .read_from_fifo_r(solve_next_r),
-        .read_from_fifo_c(solve_next_c),
-        .new_option(solve_line),
-        .assigned(solution[0]),  
-        .known(known[0])
-        .put_back_to_FIFO_r(solve_write_r),  //boolean- do we need to push to fifo
-        .put_back_to_FIFO_r(solve_write_c),
-        .solved(solved) // board is 
-    );
-*/
-
     assembler assemble (
         .clk(clk_50mhz),
         .rst(rst),
@@ -222,10 +166,8 @@ module top_level (
             state <= 0;
             display_value <= 0;
         end else begin
-            //options_per_line[1] <= options_per_line[0];
             if (receive_done) display_value <= received_data;
             else if (transmit_done) display_value <= transmit_data;
-            //if (majority_done) display_value <= majority_data;
             solution[1] <= solution[0];
             n[1] <= n[0];       
             n[2] <= n[1];

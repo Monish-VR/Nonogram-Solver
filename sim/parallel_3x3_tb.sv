@@ -23,9 +23,9 @@ module parallel_3x3_tb;
     logic [15:0] option2;
     logic valid_in;
     logic next;
-    logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
-    logic [120:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
-    logic put_back_to_FIFO;  //boolean- do we need to push to fifo
+    logic [21:0] [6:0] old_options_amnt; 
+    logic [120:0] assigned; 
+    logic put_back_to_FIFO; 
     logic solved;
     logic [120:0] known;
 
@@ -62,7 +62,6 @@ module parallel_3x3_tb;
     end
     initial begin
         $dumpfile("parallel_3x3.vcd");
-        //$dumpvars(0, parallel_3x3.vcd);
         $display("Starting Sim Solver");
         clk = 0;
         rst = 0;

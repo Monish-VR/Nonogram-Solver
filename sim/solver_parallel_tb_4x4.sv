@@ -11,11 +11,6 @@ $display("sol: \n %b  %b  %b  %b \n", SOL[0], SOL[1], SOL[2],SOL[3]); \
 $display(" %b  %b  %b  %b \n", SOL[11], SOL[12], SOL[13], SOL[14]); \
 $display(" %b  %b  %b  %b \n", SOL[22], SOL[23], SOL[24], SOL[25]); \
 $display(" %b  %b  %b  %b \n", SOL[33], SOL[34], SOL[35], SOL[36]); 
-// $display(" %b  %b  %b \n", KNOWNS);
-
-// $display("\n");
-// $display("option", option);
-// $display("\n");
 
 module solver_parallel_tb_4x4;
 
@@ -27,9 +22,9 @@ module solver_parallel_tb_4x4;
     logic [15:0] option_c;
     logic valid_in;
     logic read_from_fifo_r, read_from_fifo_c;
-    logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
-    logic [120:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
-    logic put_back_to_FIFO_r, put_back_to_FIFO_c;  //boolean- do we need to push to fifo
+    logic [21:0] [6:0] old_options_amnt; 
+    logic [120:0] assigned;
+    logic put_back_to_FIFO_r, put_back_to_FIFO_c;  
     logic solved;
     logic [15:0] option_r_back;
     logic [15:0] option_c_back;
@@ -74,8 +69,8 @@ module solver_parallel_tb_4x4;
         #10;
         rst = 0;
         started = 0;
-        old_options_amnt[0] = 3; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[0] = 3; 
+        old_options_amnt[1] = 3; 
         old_options_amnt[2] = 3;
         old_options_amnt[3] = 1;
         old_options_amnt[4] = 2;
@@ -228,20 +223,6 @@ module solver_parallel_tb_4x4;
         option_r = 4'b1010 ; //R4 ind
         option_c = 4'b0111; //C4 ind
         #10;
-        /*
-        `status(option_r,known,assigned);
-        option_r = 4'b1001 ; //R3 op2
-        option_c = 4'b1010; //C4 op1
-        #10;
-        `status(option_r,known,assigned);
-        option_r = 4'b0101 ; //R3 op2
-        option_c = 4'b1001; //C4 op1
-        //no col
-        #10;
-        `status(option_r,known,assigned);
-        option_r =4'b0101; //R3 op 3
-
-*/
 
         #10
         $display("Finishing Sim");

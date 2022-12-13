@@ -221,10 +221,8 @@ end
             display_value <= 0;
             row_counter<=0;
         end else begin
-            //options_per_line[1] <= options_per_line[0];
             if (receive_done) display_value <= received_data;
             else if (transmit_done) display_value <= transmit_data;
-            //if (majority_done) display_value <= majority_data;
             solution[1] <= solution[0];
             n[1] <= n[0];       
             n[2] <= n[1];
