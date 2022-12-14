@@ -4,6 +4,8 @@ import serial
 import time
 
 msg_flags = {'start' : '111' , 'end': '000', 'assignment':'101'}
+
+#Q - were these boards tested?
 boards = [([[2],[1]],       [[1],[2]]), #2x2
           ([[1]],           [[1]]),
           ([[1],[1]],       [[2],[]]), 

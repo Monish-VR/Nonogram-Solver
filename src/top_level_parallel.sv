@@ -1,3 +1,4 @@
+/*
 `default_nettype none
 `timescale 1ns / 1ps
 
@@ -112,7 +113,7 @@ module top_level (
 
 
 //FOR PARALLEL:
-
+/*
 
     fifo_11_by_11 fifo_r (
         .clk(clk_50mhz),               // input wire clk
@@ -240,3 +241,4 @@ end
 endmodule
 
 `default_nettype wire
+*/
