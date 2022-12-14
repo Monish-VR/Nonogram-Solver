@@ -11,6 +11,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         output logic write_ready, //signals when output to be written to BRAM is done
         output logic [15:0] line, // line = line index (5 bits) + #options + options
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
+        output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line_cols,
         output logic [$clog2(MAX_ROWS) - 1:0] m,
         output logic [$clog2(MAX_COLS) - 1:0] n,
         output logic [2:0] flag,
@@ -52,6 +53,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
             write_ready <= 0;
             line <= 0;
             options_per_line <= 0;
+            options_per_line_cols<=0;
             n <= 0;
             m <= 0;
             first <= 1;
@@ -82,6 +84,9 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             line <= line_index;
                             curr_option <= 0;
                             options_per_line[line_index] <= 0;
+                            if (~row) begin
+                                options_per_line_cols[line_index] <=0;
+                            end
                         end
                         END_LINE: begin 
                             line_index <= line_index + 1;
@@ -89,6 +94,9 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             line <= curr_option;
                             curr_option <= 0;
                             options_per_line[line_index] <= options_per_line[line_index] + 1;
+                            if (~row) begin
+                                options_per_line_cols[line_index] <=options_per_line_cols[line_index]+1;
+                            end
                         end
                         AND: begin
                             write_ready <= 0;
@@ -99,6 +107,9 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
                             line <= curr_option;
                             curr_option <= 0;
                             options_per_line[line_index] <= options_per_line[line_index] + 1;
+                            if (~row) begin
+                                options_per_line_cols[line_index] <=options_per_line_cols[line_index]+1;
+                            end
                         end
                     endcase
                 end
