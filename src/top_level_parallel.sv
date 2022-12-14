@@ -37,6 +37,7 @@ module top_level (
     logic [2:0] [$clog2(MAX_ROWS) - 1:0] m;
     logic [2:0] [$clog2(MAX_COLS) - 1:0] n;
     logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
+    logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line_cols;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic [(MAX_ROWS * MAX_COLS) - 1:0] knowns;
     logic clk_50mhz;
@@ -79,6 +80,7 @@ module top_level (
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .line(parse_line),
         .options_per_line(options_per_line),
+        .options_per_line_cols(options_per_line_cols),
         .n(n[0]),
         .m(m[0]),
         .flag(flag),
@@ -86,33 +88,33 @@ module top_level (
     );
 
 
-//     ila_0 ila (
-//         .clk(clk_50mhz),
-//         .probe0(receive_done),
-//         .probe1(received_data),
-//         .probe2(parsed),
-//         .probe3(parse_write),
-//         .probe4(parse_line),
-//         .probe5(options_per_line),
-//         .probe6(m[0]),
-//         .probe7(n[0]),
-//         .probe8(stat),
-//         .probe9(fifo_write),
-//         .probe10(next_line),
-//         .probe11(solve_next),
-//         .probe12(solve_line),
-//         .probe13(solution[0]),
-//         .probe14(solve_write),
-//         .probe15(solved),
-//         .probe16(rst),
-//         .probe17(fifo_full),
-//         .probe18(fifo_empty),
-//         .probe19(btnc),
-//         .probe20(m[1]),
-//         .probe21(n[1]),
-//         .probe22(m[2]),
-//         .probe23(n[2])
-//     );
+    ila_0 ila (
+        .clk(clk_50mhz),
+        .probe0(receive_done),
+        .probe1(received_data),
+        .probe2(parsed),
+        .probe3(parse_write),
+        .probe4(parse_line),
+        .probe5(options_per_line),
+        .probe6(m[0]),
+        .probe7(n[0]),
+        .probe8(stat),
+        .probe9(fifo_write),
+        .probe10(next_line),
+        .probe11(solve_next),
+        .probe12(solve_line),
+        .probe13(solution[0]),
+        .probe14(solve_write),
+        .probe15(solved),
+        .probe16(rst),
+        .probe17(fifo_full),
+        .probe18(fifo_empty),
+        .probe19(btnc),
+        .probe20(m[1]),
+        .probe21(n[1]),
+        .probe22(m[2]),
+        .probe23(n[2])
+    );
 
 
 
@@ -152,6 +154,7 @@ module top_level (
         .num_cols(n[1]),
         //May have to divide this:
         .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
+        .old_options_amnt_c(options_per_line_cols),
         .read_from_fifo_r(solve_next_r),
         .read_from_fifo_c(solve_next_c),
         .new_option_r(solve_line_r),
@@ -242,4 +245,4 @@ end
 endmodule
 
 `default_nettype wire
-/*
+*/
