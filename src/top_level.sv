@@ -76,7 +76,7 @@ module top_level (
         .options_per_line(options_per_line),
         .n(n[0]),
         .m(m[0]),
-        .flag(flag)
+        .flag(flag),
         .row(row)
     );
 

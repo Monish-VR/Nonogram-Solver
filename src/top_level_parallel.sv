@@ -113,9 +113,6 @@ module top_level (
 
 //FOR PARALLEL:
 
-    logic fifo_write_r,fifo_write_c, solve_next_r,solve_next_c;
-    logic [15:0] fifo_in_c,fifo_in_r, fifo_out_r,fifo_out_c, solve_line_r, solve_line_c;
-    logic fifo_empty_r,fifo_empty_c, fifo_full_r, fifo_full_c;
 
     fifo_11_by_11 fifo_r (
         .clk(clk_50mhz),               // input wire clk
