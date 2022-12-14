@@ -113,6 +113,7 @@ def get_input_method():
         print("Please enter 'Y' or 'N'.")
         input_method = input("Do you want to manually input boards (Y) or use pre-coded boards (N)? ").upper()
         print(input_method)
+    #could also ask if they would prefer to solve in parallel or serially here 
     return input_method == 'Y'
 
 def input_board():

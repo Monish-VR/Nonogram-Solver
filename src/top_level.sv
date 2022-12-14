@@ -32,7 +32,7 @@ module top_level (
     logic [1:0] state;
     logic [15:0] fifo_in, fifo_out, parse_line, solve_line;
     logic fifo_empty, fifo_full;
-    logic parsed, solved, assembled;
+    logic parsed, solved, assembled, unsolvable;
     logic [2:0] [$clog2(MAX_ROWS) - 1:0] m;
     logic [2:0] [$clog2(MAX_COLS) - 1:0] n;
     logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
@@ -127,13 +127,16 @@ module top_level (
         .num_rows(m[1]),
         .num_cols(n[1]),
         .old_options_amnt(options_per_line),  //[0:2*SIZE] [6:0]
+        .all_options_remaining(7'b1111111), //TODO: replace with total number of options
         //Taken from the BRAM in the top level- how many options for this line
         .new_line(solve_next),
         .new_option(solve_line),
         .assigned(solution[0]),  
         //.known()
         .put_back_to_FIFO(solve_write),  //boolean- do we need to push to fifo
-        .solved(solved) // board is 
+        .solved(solved), // board is
+        .unsolvable()
+
     );
 
     assembler assemble (

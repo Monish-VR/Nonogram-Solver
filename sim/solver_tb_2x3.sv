@@ -9,11 +9,6 @@ $display(" %b  %b  %b \n", KNOWNS[22], KNOWNS[23], KNOWNS[24]); \
 $display("sol: \n %b  %b  %b \n", SOL[0], SOL[1], SOL[2]); \
 $display(" %b  %b  %b \n", SOL[11], SOL[12], SOL[13]); \
 $display(" %b  %b  %b \n", SOL[22], SOL[23], SOL[24]); 
-// $display(" %b  %b  %b \n", KNOWNS);
-
-// $display("\n");
-// $display("option", option);
-// $display("\n");
 
 module solver_tb_2x3;
 
@@ -24,12 +19,12 @@ module solver_tb_2x3;
     logic [15:0] option;
     logic valid_in;
     logic next;
-    logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
-    logic [120:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
-    logic put_back_to_FIFO;  //boolean- do we need to push to fifo
-    logic solved;
+    logic [21:0] [6:0] old_options_amnt; 
+    logic [120:0] assigned;
+    logic put_back_to_FIFO;
+    logic solved, unsolvable;
     logic [120:0] known;
-
+    logic [6:0] net_option_amnt;
 
     solver uut (
         .clk(clk),
@@ -39,13 +34,16 @@ module solver_tb_2x3;
         .num_rows(4'd2),
         .num_cols(4'd3),
         .old_options_amnt(old_options_amnt),
+        .all_options_remaining(net_option_amnt),
 
         .new_line(next),
         .new_option(new_op),
         .put_back_to_FIFO(put_back_to_FIFO),  
         .assigned(assigned),
         .known(known),
-        .solved(solved)
+        .solved(solved),
+        .unsolvable(unsolvable)
+
     );
 
     always begin

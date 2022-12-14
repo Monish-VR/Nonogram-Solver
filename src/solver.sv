@@ -1,26 +1,24 @@
 `timescale 1ns / 1ps
 `default_nettype none
-//assuming line index starts at 0
-
-//packed arrays give the values the opposite way from what we expect, so array of 3X3, 
-//when we call array[0] it will give the last 3 bits
 
 module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_NUM_OPTIONS=84)(
         //TODO: confirm sizes for everything
         input wire clk,
         input wire rst,
         input wire started, //indicates board has been parsed, ready to solve
-        input wire [15:0] option,//TOOD: size larger than nessessary
+        input wire [15:0] option,
         input wire [$clog2(MAX_ROWS) - 1:0] num_rows,
         input wire [$clog2(MAX_COLS) - 1:0] num_cols,
-        input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,  //[0:2*SIZE] [6:0]
+        input wire [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS)-1:0] old_options_amnt,
+        input wire [$clog2(MAX_NUM_OPTIONS)-1:0] all_options_remaining,
         //Taken from the BRAM in the top level- how many options for this line
         output logic new_line,
         output logic [15:0] new_option,
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] assigned,  //changed to 1D array for correct indexing
         output logic [(MAX_ROWS * MAX_COLS) - 1:0] known,      // changed to 1D array for correct indexing
         output logic put_back_to_FIFO,  //boolean- do we need to push to fifo
-        output logic solved //1 when solution is good
+        output logic solved, //1 when solution is good
+        output logic unsolvable
     );
     localparam IDLE = 0;
     localparam NEXT_LINE_INDEX = 1;
@@ -45,6 +43,8 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     logic simp_valid; //out put valid for simplify
 
     logic one_option_case;
+
+    logic [$clog2(MAX_NUM_OPTIONS)-1:0] net_option_amnt;
 
     logic [LARGEST_DIM-1:0] curr_assign; //one line input of assigned input to simplify
     logic [LARGEST_DIM-1:0] curr_known; //one line input of known input to simplif
@@ -95,9 +95,10 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
     
     always_ff @(posedge clk)begin
         if(rst)begin
+            unsolvable<= 0;
             known <= 0;
             assigned <= 0;
-            net_valid_opts <=0;
+            net_option_amnt <=0;
             solved <= 0;
             state <= IDLE;
             first <= 1;
@@ -109,11 +110,14 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
             new_option <= 0;
             put_back_to_FIFO <= 0;  //boolean- do we need to push to fifo
         end else begin
+            //$display("net option amount %d", net_option_amnt);
             case(state)
                 IDLE: begin
                     if (started)begin
                         new_line <= 1;
                         options_amnt <= old_options_amnt;
+                        net_option_amnt <= all_options_remaining;
+                        unsolvable <= 0;
                         known <= 0;
                         assigned <= 0;
                     end
@@ -129,11 +133,18 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         new_line <= 0;
                         put_back_to_FIFO <= 0;
                     end else begin
-                        if(!first) options_amnt[line_index[2]] <= net_valid_opts;
+                        if(!first) begin 
+                            options_amnt[line_index[2]] <= net_valid_opts;
+                            net_option_amnt <= net_option_amnt - (options_amnt[line_index[2]] - net_valid_opts);
+                        end 
                         if (options_amnt[option] > 0) begin
                             state <= (options_amnt[option]==0)? NEXT_LINE_INDEX : (options_amnt[option] == 1)? ONE_OPTION : MULTIPLE_OPTIONS;
                         end
                         //begin new line
+                        if (net_option_amnt == 0) begin
+                            //$display("caanot be solved because out of options");
+                            unsolvable <=1;
+                        end
                         options_left <= options_amnt[option];
                         new_index <= option;
                         line_index[0] <= option;
@@ -158,6 +169,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                         put_back_to_FIFO <= 1;
                     end
                     options_left <= options_left - 1;
+                    //net_option_amnt <= net_option_amnt - 1;
                     state <= (options_left - 1 == 0)? WRITE : MULTIPLE_OPTIONS;
                     new_line <= options_left > 1;
                 end
@@ -168,6 +180,7 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                     always1 <= always1 & option;//TODO: I think this unessessary
                     always0 <= always0 & ~option;
                     options_left <= 0;
+                    net_option_amnt <= net_option_amnt - 1;
                     state <= WRITE;//TODO: I think this may be overkill
                     new_line <= 0;
                 end
@@ -181,10 +194,18 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                                 if (always1[i] == 1) begin 
                                     known[base_index + i] <= 1;
                                     assigned[base_index+ i] <= 1;
+                                    if (assigned[base_index + i] == 0 && known[base_index + i] == 1) begin
+                                        //$display("contradictory info");
+                                        unsolvable<=1;
+                                    end
                                 end
                                 if (always0[i] == 1) begin 
                                     known[base_index + i] <= 1; 
                                     assigned[base_index + i] <= 0;
+                                    if (assigned[base_index + i] == 1 && known[base_index + i] == 1) begin
+                                        //$display("contradictory info");
+                                        unsolvable<=1;
+                                    end
                                 end
                             end
                         end
@@ -195,10 +216,18 @@ module solver #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, parameter MAX_
                                 if (always1[j]) begin 
                                     known[base_index] <= 1; 
                                     assigned[base_index] <= 1;
+                                    if (assigned[base_index] == 0 && known[base_index] == 1) begin
+                                        //("contradictory info");
+                                        unsolvable<=1;
+                                    end
                                 end
                                 if (always0[j]) begin 
                                     known[base_index] <= 1; 
                                     assigned[base_index] <= 0;
+                                    if (assigned[base_index] == 1 && known[base_index] == 1) begin
+                                        //$display("contradictory info");
+                                        unsolvable<=1;
+                                    end
                                 end
                             end
                             base_index += MAX_COLS;

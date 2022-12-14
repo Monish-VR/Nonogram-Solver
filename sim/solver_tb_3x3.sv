@@ -22,9 +22,9 @@ module solver_tb_3x3;
     logic [21:0] [6:0] old_options_amnt; //[2*SIZE:0] [6:0]
     logic [120:0] assigned; //[SIZE-1:0]  [SIZE-1:0]
     logic put_back_to_FIFO;  //boolean- do we need to push to fifo
-    logic solved;
+    logic solved, unsolvable;
     logic [120:0] known;
-
+    logic [6:0] net_option_amnt;
 
     solver uut (
         .clk(clk),
@@ -34,13 +34,15 @@ module solver_tb_3x3;
         .num_rows(4'd3),
         .num_cols(4'd3),
         .old_options_amnt(old_options_amnt),
+        .all_options_remaining(net_option_amnt),
 
         .new_line(next),
         .new_option(new_op),
         .put_back_to_FIFO(put_back_to_FIFO),  
         .assigned(assigned),
         .known(known),
-        .solved(solved)
+        .solved(solved),
+        .unsolvable(unsolvable)
     );
 
     always begin
@@ -59,12 +61,13 @@ module solver_tb_3x3;
         #10;
         rst = 0;
         started = 0;
-        old_options_amnt[0] = 2; //logic [2*SIZE:0] [6:0]
-        old_options_amnt[1] = 3; //logic [2*SIZE:0] [6:0]
+        old_options_amnt[0] = 2; 
+        old_options_amnt[1] = 3;
         old_options_amnt[2] = 1;
         old_options_amnt[3] = 1;
         old_options_amnt[4] = 2;
         old_options_amnt[5] = 3;
+        net_option_amnt = 12;
         #10;
 
         //BOARD :
@@ -258,7 +261,7 @@ module solver_tb_3x3;
         #10;
 
         $display("is solved? %b",solved);
-
+        $display("this board cannot be solved %b ", unsolvable);
         #10
         $display("Finishing Sim");
         $finish;
