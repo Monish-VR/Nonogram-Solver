@@ -36,6 +36,7 @@ module top_level (
     logic [2:0] [$clog2(MAX_ROWS) - 1:0] m;
     logic [2:0] [$clog2(MAX_COLS) - 1:0] n;
     logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line;
+      logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0]   options_per_line_cols;
     logic [1:0] [(MAX_ROWS * MAX_COLS) - 1:0] solution;
     logic [(MAX_ROWS * MAX_COLS) - 1:0] knowns;
     logic clk_50mhz;
@@ -74,6 +75,7 @@ module top_level (
         .write_ready(parse_write), //Indication that we need to write to BRAM ,here in top level , we done with one line to the BRAM, ready to get new one
         .line(parse_line),
         .options_per_line(options_per_line),
+    .old_options_amnt_c(options_per_line_cols),
         .n(n[0]),
         .m(m[0]),
         .flag(flag),
