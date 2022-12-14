@@ -41,6 +41,7 @@ module top_level (
     logic clk_50mhz;
     logic [2:0] flag;
     logic fifo_rst;
+    logic row;
 
     assign stat = {state, fifo_empty};
     assign rst = btnc;
@@ -75,7 +76,8 @@ module top_level (
         .options_per_line(options_per_line),
         .n(n[0]),
         .m(m[0]),
-        .flag(flag)
+        .flag(flag),
+        .row(row)
     );
 
     fifo_11_by_11 fifo (

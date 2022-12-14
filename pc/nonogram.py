@@ -4,10 +4,18 @@ import serial
 import time
 
 msg_flags = {'start' : '111' , 'end': '000', 'assignment':'101'}
-boards = [([[2],[1]], [[1],[2]]), #2x2
-          ([[1]], [[1]]),
-          ([[1],[1]], [[2],[]]), 
-          ([[3],[1,1]],[[2],[1],[2]]) #2x3
+boards = [([[2],[1]],       [[1],[2]]), #2x2
+          ([[1]],           [[1]]),
+          ([[1],[1]],       [[2],[]]), 
+          ([[3],[1,1]],     [[2],[1],[2]]), #2x3
+          ([[3],[1,1]],     [[2],[1],[2]]),
+          ([[3],[1,1],[1]],    [[2],[1,1],[2]]), #3x3
+          ([[1],[1,1],[1]],    [[1],[1,1],[1]]),
+          ([[2],[1,1],[3],[1]], [[1],[1,1],[1,1],[3]]),#4x4
+          ([[3],[1,1],[1,1],[1,1],[3]], [[5],[1,1],[1,1],[3],[]]), #5x5
+          #([[2],[1,1],[1,1,1],[1,1,1],[3,1],[1]], [[4],[1,1],[1,1],[3],[],[4]]), #6x6
+          #([[2,2],[1,1,1],[1,1,1],[1,1],[1,1],[1]], [[2],[1,1],[1,1],[2,1],[1,1],[1,1],[2]]), #6x7
+          ([[2,2],[3,3],[7],[5],[3],[1]], [[2],[4],[5],[4],[5],[4],[2]])
           ]
 
 
@@ -50,7 +58,7 @@ def byte_to_bitstring(input_bytes):
     bit_str = format(input_int, '08b')
     return bit_str
 
-def display_board(board,m,n):
+def display_solved_board(board,m,n):
     '''
     display solved board
     '''
@@ -90,14 +98,14 @@ def rx(ser):
                             n = int(msg[3:15],2)
                             board = [ [ None for y in range(n) ] for x in range(m) ]
                     elif flag == msg_flags['end']:
-                        display_board(board,m,n)
+                        display_solved_board(board,m,n)
                         board_done = True
                     elif flag == msg_flags['assignment']:
                         indx = int(msg[3:15],2)
                         x = indx // n
                         y = indx % n
                         board[x][y] = msg[15]
-                        #display_board(board,m,n)
+                        #display_solved_board(board,m,n)
                 count = not count
     except Exception as e:
         print(e)
@@ -161,9 +169,11 @@ def tx(ser, r,c):
         ser.close()
 
 def main():
-    '''
-    call helpers to do all the pre-seolver preprocessing
-    '''
+    """ print("\u0332".join("hello "))
+    r,c = boards[0]
+    print(r)
+    print(c)
+    print("board\:\n\n   | 1 | 2 |\n   |   | 2 |\n___|___|___|\n1  |\n2  |\n") """
     connection = connect()
 
     method = get_input_method()
@@ -175,6 +185,7 @@ def main():
         rx(connection)
         time.sleep(.5)
         index = (index+1) % len(boards)
+        print(index)
         next = input("\nEnter any character to continue (or 'q' to exit): ").upper()
         if next == 'Q':
             break
@@ -212,7 +223,7 @@ def test_rx(input):
                         n = int(msg[3:15],2)
                         board = [ [ None for y in range(m) ] for x in range(n) ]
                 elif flag == msg_flags['end']:
-                    display_board(board,m,n)
+                    display_solved_board(board,m,n)
                     board_done = True
                 elif flag == msg_flags['assignment']:
                     indx = int(msg[3:15],2)
@@ -270,25 +281,18 @@ c = [[1],[1,1], [1]]
 4 by 4 :
 0 1 1 0
 1 0 0 1
-0 1 1 0
-0 0 0 1
-r = [[2],[1,1], [2] , [1]]
-c = [[1],[1,1], [1,1], [1,1]]
-4 by 4 :
-0 1 1 0
-1 0 0 1
 0 1 1 1
 0 0 0 1
 r = [[2],[1,1], [3] , [1]]
 c = [[1],[1,1], [1,1], [3]]
 5 by 5 : # D AS DANA
-0 1 1 0 0
+1 1 1 0 0
 1 0 0 1 0
 1 0 0 1 0
 1 0 0 1 0
 1 1 1 0 0
-r = [[2],[1,1], [1,1] , [1,1], [3]]
-c = [[4],[1,1], [1,1], [3],[]]
+r = [[3],[1,1], [1,1] , [1,1], [3]]
+c = [[5],[1,1], [1,1], [3],[]]
 6 by 6 : 
 0 1 1 0 0 0
 1 0 0 1 0 0
