@@ -43,6 +43,10 @@ module top_level (
     logic [2:0] flag;
     logic fifo_rst;
     logic row; //are we still recieving rows from parser
+    logic fifo_write_r,fifo_write_c, solve_next_r,solve_next_c, solve_write_c, solve_write_r;
+    logic [15:0] fifo_in_c,fifo_in_r, fifo_out_r,fifo_out_c, solve_line_r, solve_line_c;
+    logic fifo_empty_r,fifo_empty_c, fifo_full_r, fifo_full_c;
+    logic [$clog2(MAX_NUM_OPTIONS * MAX_COLS) - 1:0] row_counter ; 
 
     assign stat = {state, (fifo_empty_r & fifo_empty_c)};
     assign rst = btnc;
@@ -77,43 +81,43 @@ module top_level (
         .options_per_line(options_per_line),
         .n(n[0]),
         .m(m[0]),
-        .flag(flag)
+        .flag(flag),
         .row(row)
     );
 
 
-    /*ila_0 ila (
-        .clk(clk_50mhz),
-        .probe0(receive_done),
-        .probe1(received_data),
-        .probe2(parsed),
-        .probe3(parse_write),
-        .probe4(parse_line),
-        .probe5(options_per_line),
-        .probe6(m[0]),
-        .probe7(n[0]),
-        .probe8(stat),
-        .probe9(fifo_write),
-        .probe10(next_line),
-        .probe11(solve_next),
-        .probe12(solve_line),
-        .probe13(solution[0]),
-        .probe14(solve_write),
-        .probe15(solved),
-        .probe16(rst),
-        .probe17(fifo_full),
-        .probe18(fifo_empty),
-        .probe19(btnc),
-        .probe20(m[1]),
-        .probe21(n[1]),
-        .probe22(m[2]),
-        .probe23(n[2])
-    );*/
+//     ila_0 ila (
+//         .clk(clk_50mhz),
+//         .probe0(receive_done),
+//         .probe1(received_data),
+//         .probe2(parsed),
+//         .probe3(parse_write),
+//         .probe4(parse_line),
+//         .probe5(options_per_line),
+//         .probe6(m[0]),
+//         .probe7(n[0]),
+//         .probe8(stat),
+//         .probe9(fifo_write),
+//         .probe10(next_line),
+//         .probe11(solve_next),
+//         .probe12(solve_line),
+//         .probe13(solution[0]),
+//         .probe14(solve_write),
+//         .probe15(solved),
+//         .probe16(rst),
+//         .probe17(fifo_full),
+//         .probe18(fifo_empty),
+//         .probe19(btnc),
+//         .probe20(m[1]),
+//         .probe21(n[1]),
+//         .probe22(m[2]),
+//         .probe23(n[2])
+//     );
 
 
 
 //FOR PARALLEL:
-/*
+
 
     fifo_11_by_11 fifo_r (
         .clk(clk_50mhz),               // input wire clk
@@ -137,7 +141,7 @@ module top_level (
         .empty(fifo_empty_c)             // output wire empty
     );
 
-    solver sol (
+    parallel_solver sol (
         //TODO: confirm sizes for everything
         .clk(clk_50mhz),
         .rst(rst),
@@ -153,9 +157,9 @@ module top_level (
         .new_option_r(solve_line_r),
         .new_option_c(solve_line_c),
         .assigned(solution[0]),  
-        .known(known[0])
+        .known(knowns),
         .put_back_to_FIFO_r(solve_write_r),  //boolean- do we need to push to fifo
-        .put_back_to_FIFO_r(solve_write_c),
+        .put_back_to_FIFO_c(solve_write_c),
         .solved(solved) // board is 
     );
 
@@ -184,10 +188,7 @@ module top_level (
         .done(transmit_done)
     );
 
-logic fifo_write_r,fifo_write_c, solve_next_r,solve_next_c;
-logic [15:0] fifo_in_c,fifo_in_r, fifo_out_r,fifo_out_c, solve_line_r, solve_line_c;
-logic fifo_empty_r,fifo_empty_c, fifo_full_r, fifo_full_c;
-logic [$clog2(MAX_NUM_OPTIONS * MAX_COLS) - 1:0] row_counter ; 
+
 
 //////// TO COMPLETE- how to get number of total entries to fifo r- all the rows indices and all the rows options
 // and then assign when finished_rows = 1 or 0
@@ -241,4 +242,4 @@ end
 endmodule
 
 `default_nettype wire
-*/
+/*
