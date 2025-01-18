@@ -7,7 +7,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         input wire valid_in,
         input wire [7:0] byte_in,
         
-        output logic board_done,  //signals parser is done
+        output logic board_done,  //signals parser is done #MVR: goes to the solver to indicate board is done
         output logic write_ready, //signals when output to be written to BRAM is done
         output logic [15:0] line, // line = line index (5 bits) + #options + options
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
