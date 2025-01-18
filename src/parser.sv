@@ -37,7 +37,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
     logic first;
     // logic row;
     logic [7:0] buffer;
-    logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index;
+        logic [$clog2(MAX_ROWS + MAX_COLS) - 1:0] line_index; // #MVR: for 11x11 it's 5 bit wide
 
     logic [15:0] curr_option; // hardcoded based upon FIFO
     logic [6:0] assignment_index;
@@ -46,7 +46,7 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
     assign flag = buffer[7:5];
     assign assignment_index = byte_in[7:1];
     assign assignment_value = byte_in[0];
-
+        
     always_ff @(posedge clk)begin
         if (rst)begin
             board_done <= 0;
