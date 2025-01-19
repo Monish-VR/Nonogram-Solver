@@ -12,9 +12,9 @@ module parser #(parameter MAX_ROWS = 11, parameter MAX_COLS = 11, MAX_NUM_OPTION
         output logic [15:0] line, // line = line index (5 bits) + #options + options #MVR : Goes to FIFO by collecting the two 8 bit data from UART_RX
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line,
         output logic [MAX_ROWS + MAX_COLS - 1:0] [$clog2(MAX_NUM_OPTIONS) - 1:0] options_per_line_cols,
-        output logic [$clog2(MAX_ROWS) - 1:0] m,
-        output logic [$clog2(MAX_COLS) - 1:0] n,
-        output logic [2:0] flag, // #MVR: Indicates board's stage, line's stage n all, check // message flags
+        output logic [$clog2(MAX_ROWS) - 1:0] m, //# MVR: 4 bits in this case
+        output logic [$clog2(MAX_COLS) - 1:0] n,//# MVR: 4 bits in this case
+        output logic [2:0] flag, // #MVR: Indicates when board has to start and end, same for line n all | check // message flags
         output logic  row
     );
 
